@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn HTML - CodeLab</title>
+
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ctext x='0' y='12' font-size='12'%3E♾️%3C/text%3E%3C/svg%3E"
+        type="image/svg+xml">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['"Courier New"', 'Courier', 'monospace'],
+                        'fira-code': ['"Fira Code"', 'monospace'],
+                        'consolas': ['Consolas', 'monospace'],
+                        'monaco': ['Monaco', 'monospace'],
+                        'source-code-pro': ['"Source Code Pro"', 'monospace'],
+                        'inconsolata': ['Inconsolata', 'monospace'],
+                        'hack': ['Hack', 'monospace'],
+                        'jetbrains-mono': ['"JetBrains Mono"', 'monospace'],
+                        'cascadia-code': ['"Cascadia Code"', 'monospace'],
+                        'courier-new': ['"Courier New"', 'Courier', 'monospace'],
+                        'roboto-mono': ['"Roboto Mono"', 'monospace'],
+                    },
+                },
+            },
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col h-screen overflow-hidden font-sans">
+
+    <!-- Header Section -->
+    <header
+        class="flex-shrink-0 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex items-center justify-between shadow-sm z-10">
+        <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">CodeLab - Learn HTML</h1>
+        <div class="flex items-center space-x-3">
+            <!-- Home Button -->
+            <button id="about-btn"
+                class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
+                aria-label="Open About Page" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Section -->
+    <main class="flex-1 flex items-center justify-center p-6">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-auto w-full">
+            <section>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Coming Soon</h2>
+                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                    We are working hard to bring you the best HTML learning experience. Stay tuned for updates!
+                </p>
+            </section>
+
+            <section class="mt-6">
+                <!-- Button to navigate back to Index Page -->
+                <button onclick="window.location.href='index.html'"
+                    class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-all duration-300">
+                    Go Back to Home
+                </button>
+            </section>
+        </div>
+    </main>
+
+</body>
+
+</html>

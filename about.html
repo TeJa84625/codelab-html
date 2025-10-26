@@ -6,17 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CodeLab - About</title>
 
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ctext x='0' y='12' font-size='12'%3E♾️%3C/text%3E%3C/svg%3E"
+        type="image/svg+xml">
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Hack&family=Inconsolata&family=JetBrains+Mono&family=Roboto+Mono&family=Source+Code+Pro&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
 
     <script>
         tailwind.config = {
@@ -117,46 +112,44 @@
             background-color: #1f2937;
             border-right: 1px solid #374151;
         }
+
+        main {
+            overflow-y: auto;
+            max-height: calc(100vh - 100px);
+        }
     </style>
 </head>
 
 <body
     class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col h-screen overflow-hidden font-sans">
-    <div id="mobile-warning"
-        class="md:hidden flex flex-col items-center justify-center fixed inset-0 bg-black/80 z-[100] p-4 text-center">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl">
-            <i class="fas fa-mobile-screen-button text-4xl text-blue-500 mb-4"></i>
-            <h2 class="text-xl font-bold mb-2">Best Experience on Desktop</h2>
-            <p class="text-gray-700 dark:text-gray-300">This CodeLab is designed for larger screens. Please switch to a
-                desktop or tablet for the best experience.</p>
-        </div>
-    </div>
-
     <header
         class="flex-shrink-0 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex items-center justify-between shadow-sm z-10">
-        <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">CodeLab - About</h1>
+        <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">CodeLab - HTML</h1>
         <div class="flex items-center space-x-3">
             <button id="about-btn"
                 class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
                 aria-label="Open About Page" onclick="window.location.href='index.html'">
                 <i class="fas fa-home"></i>
             </button>
+            <button class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300"
+                onclick="window.location.href='learn.html'">
+                Learn HTML
+            </button>
         </div>
     </header>
 
     <main class="flex-1 flex items-center justify-center p-6">
-        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-auto w-full">
-            <!-- About Section -->
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-auto w-full mt-64">
             <section>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">About CodeLab</h2>
                 <p class="text-gray-600 dark:text-gray-300 mb-4">
                     CodeLab is an interactive learning platform that allows users to experiment with code in a live
-                    environment. This version focuses on HTML, offering features like syntax highlighting and code editing
+                    environment. This version focuses on HTML, offering features like syntax highlighting and code
+                    editing
                     in a clean, modern UI.
                 </p>
             </section>
-    
-            <!-- Description Section -->
+
             <section class="mt-6">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Description</h2>
                 <p class="text-gray-600 dark:text-gray-300">
@@ -165,47 +158,107 @@
                     platform is designed to be simple yet powerful, perfect for both beginners and advanced users.
                 </p>
             </section>
-    
-            <!-- Shortcuts Section -->
+
             <section class="mt-6">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Shortcuts</h2>
-                <ul class="list-disc pl-5 text-gray-600 dark:text-gray-300">
-                    <li><strong>Ctrl + S</strong> - Save your work</li>
-                    <li><strong>Ctrl + Shift + C</strong> - Open console</li>
-                    <li><strong>Ctrl + D</strong> - Duplicate the current file</li>
-                    <li><strong>Ctrl + E</strong> - Open editor settings</li>
-                </ul>
+                <div class="flex space-x-10">
+                    <div class="w-1/2">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Windows Shortcuts</h3>
+                        <ul class="list-disc pl-5 text-gray-600 dark:text-gray-300">
+                            <li><strong>Ctrl + S</strong> - Save and Run</li>
+                            <li><strong>Ctrl + Enter</strong> - Save and Run</li>
+                            <li><strong>Ctrl + /</strong> - Comment</li>
+                            <li><strong>Ctrl + B</strong> - Settings</li>
+                        </ul>
+                    </div>
+
+                    <div class="w-1/2">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Mac Shortcuts</h3>
+                        <ul class="list-disc pl-5 text-gray-600 dark:text-gray-300">
+                            <li><strong>Cmd + S</strong> - Save and Run</li>
+                            <li><strong>Cmd + Enter</strong> - Save and Run</li>
+                            <li><strong>Cmd + /</strong> - Comment</li>
+                            <li><strong>Cmd + B</strong> - Settings</li>
+                        </ul>
+                    </div>
+                </div>
             </section>
-    
-            <!-- FAQ Section -->
+
             <section class="mt-6">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">FAQ</h2>
-                <div>
-                    <h3 class="font-medium text-gray-900 dark:text-gray-100">How do I save my project?</h3>
-                    <p class="text-gray-600 dark:text-gray-300">
+
+                <div class="faq-item">
+                    <div class="flex items-center justify-between cursor-pointer" onclick="toggleAnswer('answer1')">
+                        <h3 class="font-medium text-gray-900 dark:text-gray-100">How do I save my project?</h3>
+                        <span id="icon1" class="text-xl text-gray-500">+</span>
+                    </div>
+                    <p id="answer1" class="text-gray-600 dark:text-gray-300 hidden mt-2">
                         You can save your work by using the "Ctrl + S" shortcut or by clicking the save button in the
                         editor.
                     </p>
                 </div>
-                <div class="mt-3">
-                    <h3 class="font-medium text-gray-900 dark:text-gray-100">Can I download my project?</h3>
-                    <p class="text-gray-600 dark:text-gray-300">
-                        Yes, you can download your project as a zip file by clicking the download button in the header.
+
+                <div class="faq-item mt-3">
+                    <div class="flex items-center justify-between cursor-pointer" onclick="toggleAnswer('answer2')">
+                        <h3 class="font-medium text-gray-900 dark:text-gray-100">Issue with &lt;script&gt; tag?</h3>
+                        <span id="icon2" class="text-xl text-gray-500">+</span>
+                    </div>
+                    <p id="answer2" class="text-gray-600 dark:text-gray-300 hidden mt-2">
+                        Place a space between the script tag like: &lt;script&gt; &lt;/script&gt;
+                    </p>
+                </div>
+
+                <div class="faq-item mt-3">
+                    <div class="flex items-center justify-between cursor-pointer" onclick="toggleAnswer('answer3')">
+                        <h3 class="font-medium text-gray-900 dark:text-gray-100">Developer Features</h3>
+                        <span id="icon3" class="text-xl text-gray-500">+</span>
+                    </div>
+                    <p id="answer3" class="text-gray-600 dark:text-gray-300 hidden mt-2">
+                        You can create multiple files at once, for example: about.html, contact.html, app.js.<br>
+                        To create new files, use the "Create Files" button in the editor toolbar.<br>
+                        Click to Import files. Accepts .html, .css, or .js files.<br>
+                        After importing, the file will be available for editing in your project.<br>
                     </p>
                 </div>
             </section>
-    
-            <!-- Contact Section -->
+
             <section class="mt-6">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Contact</h2>
                 <p class="text-gray-600 dark:text-gray-300">
                     If you have any questions or need support, feel free to reach out to us at <a
-                        href="mailto:support@codelab.com"
-                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400">support@codelab.com</a>.
+                        href="mailto:tejagavara.dev@gmail.com"
+                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400">tejagavara.dev</a>.
                 </p>
             </section>
+
+            <section class="mt-6">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">More Projects</h2>
+                <p class="text-gray-600 dark:text-gray-300">
+                    Check out my other projects on my portfolio: <a href="https://tejag.vercel.app"
+                        target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">My Portfolio</a>.
+                </p>
+            </section>
+
         </div>
+
+        
     </main>
+    
+
+    <script>
+        function toggleAnswer(answerId) {
+            const answerElement = document.getElementById(answerId);
+            const iconElement = document.getElementById('icon' + answerId.slice(-1));
+
+            if (answerElement.classList.contains('hidden')) {
+                answerElement.classList.remove('hidden');
+                iconElement.textContent = '-';
+            } else {
+                answerElement.classList.add('hidden');
+                iconElement.textContent = '+';
+            }
+        }
+    </script>
 </body>
 
 </html>
