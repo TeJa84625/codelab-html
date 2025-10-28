@@ -75,7 +75,7 @@ let appState = {
     ],
     activeFileId: '1',
     theme: 'light',
-    editorFont: "'Courier New', Courier, monospace",
+    editorFont: "'JetBrains Mono', monospace",
     onConfirm: null, 
     newTabHandle: null,
     codeMirrorInstance: null,
@@ -201,15 +201,17 @@ function setupCodeMirror() {
     appState.codeMirrorInstance = CodeMirror.fromTextArea(dom.codeEditor, {
         lineNumbers: true,
         mode: 'htmlmixed',
-        theme: 'default', // Will be updated by setTheme
+        theme: 'default',
         lineWrapping: true,
         autoCloseTags: true,
         autoCloseBrackets: true,
         extraKeys: {
             "Cmd-Enter": handleShortcutRun,
             "Cmd-S": handleShortcutRun,
+            "Cmd-B": showsettings,
             "Ctrl-Enter": handleShortcutRun,
             "Ctrl-S": handleShortcutRun,
+            "Ctrl-B": showsettings,
             "Cmd-/": "toggleComment",
             "Ctrl-/": "toggleComment"
         }
@@ -218,6 +220,10 @@ function setupCodeMirror() {
     // Setup listener for saving content
     const debouncedSaveCurrentFile = debounce(saveCurrentFile, 250);
     appState.codeMirrorInstance.on('change', debouncedSaveCurrentFile);
+}
+
+function showsettings() {
+    showModal(dom.settingsModal);
 }
 
 /**
@@ -1074,7 +1080,18 @@ function setupEventListeners() {
     // Preview Actions
     dom.runCodeBtn.addEventListener('click', handleRunClick);
     dom.runNewTabBtn.addEventListener('click', handleRunInNewTab);
-    dom.updateNewTabBtn.addEventListener('click', () => runCode('index.html')); // UPDATED
+    let rotationDegree = 0;
+
+    dom.updateNewTabBtn.addEventListener('click', () => {
+        const icon = document.getElementById('update-icon');
+    
+        rotationDegree += 180;
+        icon.style.transform = `rotate(${rotationDegree}deg)`;
+
+        runCode('index.html');
+    });
+
+
 
     // Modal Actions
     dom.modalBackdrop.addEventListener('click', (e) => {

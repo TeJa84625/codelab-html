@@ -1,0 +1,272 @@
+<html class="light" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Tags for Beginners</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+
+        section {
+            margin: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #4CAF50;
+        }
+
+        pre {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+
+        .example {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-left: 5px solid #4CAF50;
+            margin: 10px 0;
+        }
+
+        .example-code {
+            color: #333;
+            font-family: monospace;
+        }
+    </style>
+    <style data-filename="styles.css">
+
+    </style>
+
+</head>
+
+<body>
+    <div data-page="index.html" class="codelab-page" style="display: block;">
+
+        <header>
+            <h1>HTML Tags for Beginners</h1>
+            <p>Learn the most common HTML tags with examples and explanations!</p>
+        </header>
+
+        <main>
+            <section>
+                <h2>1. The &lt;h1&gt; to &lt;h6&gt; Tags (Headings)</h2>
+                <p>The &lt;h1&gt; to &lt;h6&gt; tags are used to define headings in HTML. &lt;h1&gt; is the largest, and
+                    &lt;h6&gt; is the smallest.</p>
+                <pre class="example-code">&lt;h1&gt;This is a Heading 1&lt;/h1&gt;</pre>
+                <div class="example">
+                    <h1>This is a Heading 1</h1>
+                </div>
+            </section>
+
+            <section>
+                <h2>2. The &lt;p&gt; Tag (Paragraph)</h2>
+                <p>The &lt;p&gt; tag is used to define a paragraph of text. It automatically adds space before and after
+                    the text.</p>
+                <pre class="example-code">&lt;p&gt;This is a paragraph.&lt;/p&gt;</pre>
+                <div class="example">
+                    <p>This is a paragraph.</p>
+                </div>
+            </section>
+
+            <section>
+                <h2>3. The &lt;a&gt; Tag (Link)</h2>
+                <p>The &lt;a&gt; tag is used to create links. You can link to other pages or websites by using the href
+                    attribute.</p>
+                <pre class="example-code">&lt;a href="https://www.example.com"&gt;Visit Example&lt;/a&gt;</pre>
+                <div class="example">
+                    <a href="https://codelab-html.vercel.app" target="_blank">Visit Codelab - Html Editor</a>
+                </div>
+            </section>
+
+            <section>
+                <h2>4. The &lt;img&gt; Tag (Image)</h2>
+                <p>The &lt;img&gt; tag is used to display images on a webpage. It uses the src attribute to specify the
+                    image source and alt for alternative text.</p>
+                <pre
+                    class="example-code">&lt;img src="https://cdn.pixabay.com/photo/2017/06/19/04/31/logo-2418159_1280.png" alt="A description of the image"&gt;</pre>
+                <div class="example">
+                    <img src="https://cdn.pixabay.com/photo/2017/06/19/04/31/logo-2418159_1280.png"
+                        alt="A description of the image">
+                </div>
+            </section>
+
+            <section>
+                <h2>5. The &lt;ul&gt; and &lt;ol&gt; Tags (Lists)</h2>
+                <p>The &lt;ul&gt; tag is used to define an unordered list, and the &lt;ol&gt; tag is for ordered lists.
+                    Both use the &lt;li&gt; tag for each list item.</p>
+
+                <h3>Unordered List:</h3>
+                <pre class="example-code">&lt;ul&gt;
+    &lt;li&gt;Item 1&lt;/li&gt;
+    &lt;li&gt;Item 2&lt;/li&gt;
+    &lt;li&gt;Item 3&lt;/li&gt;
+&lt;/ul&gt;
+            </pre>
+                <div class="example">
+                    <ul>
+                        <li>Item 1</li>
+                        <li>Item 2</li>
+                        <li>Item 3</li>
+                    </ul>
+                </div>
+
+                <h3>Ordered List:</h3>
+                <pre class="example-code">&lt;ol&gt;
+    &lt;li&gt;First item&lt;/li&gt;
+    &lt;li&gt;Second item&lt;/li&gt;
+    &lt;li&gt;Third item&lt;/li&gt;
+&lt;/ol&gt;
+            </pre>
+                <div class="example">
+                    <ol>
+                        <li>First item</li>
+                        <li>Second item</li>
+                        <li>Third item</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section>
+                <h2>6. The &lt;div&gt; Tag (Division)</h2>
+                <p>The &lt;div&gt; tag is used to group content together. It doesn't add any styling by itself but is
+                    useful for applying CSS styles or JavaScript.</p>
+                <pre class="example-code">&lt;div class="container"&gt;Content here&lt;/div&gt;</pre>
+                <div class="example">
+                    <div class="container" style="padding: 10px; background-color: #ddd;">
+                        Content here
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2>7. The &lt;span&gt; Tag (Inline Element)</h2>
+                <p>The &lt;span&gt; tag is used for inline grouping. It doesn't add any layout effect but can be styled
+                    using CSS.</p>
+                <pre class="example-code">&lt;span style="color: red;"&gt;This is red text&lt;/span&gt;</pre>
+                <div class="example">
+                    <span style="color: red;">This is red text</span>
+                </div>
+            </section>
+
+            <section>
+                <h2>8. The &lt;form&gt; Tag (Form)</h2>
+                <p>The &lt;form&gt; tag is used to create a form for user input. It can contain different input elements
+                    like text fields, checkboxes, and buttons.</p>
+                <pre class="example-code">&lt;form&gt;
+    &lt;label for="name"&gt;Name&lt;/label&gt;
+    &lt;input type="text" id="name"&gt;
+    &lt;button type="submit"&gt;Submit&lt;/button&gt;
+&lt;/form&gt;
+            </pre>
+                <div class="example">
+                    <form action="#" method="POST">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required="">
+                        <button type="submit">Submit</button>
+                    </form>
+                </div>
+            </section>
+
+            <section>
+                <h2>9. The &lt;br&gt; Tag (Line Break)</h2>
+                <p>The &lt;br&gt; tag is used to create a line break, so text or other elements appear on the next line.
+                </p>
+                <pre class="example-code">&lt;p&gt;This is text&lt;br&gt;This is on a new line&lt;/p&gt;</pre>
+                <div class="example">
+                    <p>This is text<br> This is on a new line</p>
+                </div>
+            </section>
+
+            <section>
+                <h2>10. The &lt;strong&gt; and &lt;em&gt; Tags (Text Formatting)</h2>
+                <p>The &lt;strong&gt; tag is used to define strong emphasis, usually resulting in bold text, while the
+                    &lt;em&gt; tag is used for emphasizing text, usually rendering it in italics.</p>
+                <pre class="example-code">&lt;strong&gt;Bold Text&lt;/strong&gt; &lt;em&gt;Italic Text&lt;/em&gt;</pre>
+                <div class="example">
+                    <strong>Bold Text</strong> <em>Italic Text</em>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+    <div data-page="about.html" class="codelab-page" style="display: none;">
+        <!-- Invalid HTML: Could not extract body of about.html --></div>
+
+    <script data-filename="script.js">
+
+    </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // This function handles showing/hiding the correct page div
+            const showCodelabPage = (pageName) => {
+                // Normalize pageName (e.g., ./contact.html -> contact.html)
+                const targetPage = pageName.split('/').pop();
+
+                let found = false;
+                document.querySelectorAll('.codelab-page').forEach(page => {
+                    if (page.dataset.page.toLowerCase() === targetPage.toLowerCase()) {
+                        page.style.display = 'block';
+                        found = true;
+                    } else {
+                        page.style.display = 'none';
+                    }
+                });
+
+                if (!found) {
+                    console.warn(`CodeLab Navigation: Page "${targetPage}" not found.`);
+                    // As a failsafe, show the first page
+                    const firstPage = document.querySelector('.codelab-page');
+                    if (firstPage) firstPage.style.display = 'block';
+                }
+            };
+
+            // Intercept all link clicks
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a');
+                if (!link) return;
+
+                const href = link.getAttribute('href'); // Get the raw href attribute
+                if (href) {
+                    // Check if it's a local HTML link
+                    const isLocalHtml = !href.startsWith('#') &&
+                        !href.startsWith('http') &&
+                        !href.startsWith('mailto:') &&
+                        href.endsWith('.html');
+
+                    if (isLocalHtml) {
+                        e.preventDefault(); // Stop the browser from trying to navigate
+                        showCodelabPage(href); // Use our function to show the page
+                    }
+                }
+            });
+        });
+    </script>
+
+
+
+</body>
+
+</html>
