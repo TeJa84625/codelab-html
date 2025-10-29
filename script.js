@@ -5,14 +5,12 @@ const DEFAULT_HTML = `<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Project</title>
-    <!-- This file will be auto-injected by CodeLab -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>Hello, CodeLab - HTML!</h1>
     <p>Edit index.html, styles.css, and script.js to build your project.</p>
     <p>Try clicking this: <a href="about.html">Go to About Page</a></p>
-    <!-- This file will be auto-injected by CodeLab -->
     <script src="script.js"><\/script>
 </body>
 </html>`;
@@ -84,6 +82,8 @@ let appState = {
 
 // --- DOM Element References ---
 const dom = {};
+let globalResponseData = null; // For debugging
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxjLTjYLoigWASxzaqx1m0dBuWtazZ3syojUGNGuWiMH0OOZicPa31f7MUWk5WXCNb9/exec';
 
 /**
  * Populates the dom object. Called once the DOM is ready.
@@ -185,100 +185,129 @@ function setupDefaultFiles() {
 }
 
 /**
- * *** UPDATED: Now formats ?c=... code ***
- * Checks URL for project data and loads it.
+ * *** NEW: Consoldiated fetch function ***
+ * Fetches project data from the Google Script.
+ * @param {string} id The 6-digit project ID.
+ * @returns {Promise<string>} The project data string.
  */
-function handleUrlParameters() {
+async function fetchProjectData(id) {
+    if (!id) {
+        throw new Error("No project ID provided.");
+    }
+    // Uses the global GOOGLE_SCRIPT_URL defined at the top
+    const url = GOOGLE_SCRIPT_URL + '?ID=' + encodeURIComponent(id);
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Network response was not ok (status: ${response.status})`);
+        }
+        const data = await response.json();
+        
+        globalResponseData = data; // For debugging
+        // console.log('Fetched Data:', data);
+
+        if (data && data.Data) {
+            return data.Data; // Resolve with the project string
+        } else if (data && (data.status === "error" || !data.Data)) {
+            // Handle cases where ID is not found or data is empty
+            throw new Error(data.message || 'Project ID not found or data is empty.');
+        } else {
+            throw new Error('Invalid data format received from server.');
+        }
+    } catch (error) {
+        // console.error('Error fetching data:', error);
+        // Re-throw so the caller can handle it
+        throw new Error(`Error fetching data from the server: ${error.message}`);
+    }
+}
+
+
+/**
+ * *** UPDATED: Now handles ?id=, ?data=, and ?c= ***
+ * Checks URL for project data and loads it.
+ * This is now robust against race conditions.
+ */
+async function handleUrlParameters() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
-        // Use 'data' for base64 JSON, fallback to 'c' for raw HTML
+        const projectID = urlParams.get('id');
         const projectDataString = urlParams.get('data');
         const legacyCodeString = urlParams.get('c');
 
-        if (projectDataString) {
-            // New Shareable URL logic
-            const jsonString = atob(projectDataString); // Decode base64
+        let projectLoaded = false; // Flag to skip default setup
+
+        if (projectID) {
+            // --- 1. Load from ?id=... ---
+            showConfirmModal('Loading Project...', `Fetching project ID: ${projectID}... Please wait.`, null, true);
+            try {
+                // Wait for the project data to be fetched
+                const projectString = await fetchProjectData(projectID); 
+                hideActiveModal();
+                
+                // Now load the project from the string
+                const success = loadProjectFromString(projectString); 
+                if (success) {
+                    projectLoaded = true; // Mark as loaded
+                } else {
+                    throw new Error("Failed to parse project data from ID.");
+                }
+            } catch (e) {
+                // Handle fetch or parse errors
+                hideActiveModal();
+                console.error("Failed to load from ID:", e);
+                showConfirmModal('Error Loading Project', `Could not load project with ID: ${projectID}. ${e.message}. Loading default project.`, null, true);
+                // Let it fall through to load defaults
+            }
+
+        } else if (projectDataString) {
+            // --- 2. Fallback: Load from ?data=... (Base64) ---
+            const jsonString = atob(projectDataString);
             const projectData = JSON.parse(jsonString);
             
             appState.files = []; // Clear defaults
             let firstFileId = null;
             
-            // Re-create files from shared JSON
             for (const fileName in projectData) {
-                const content = projectData[fileName];
-                const newFile = createFile(fileName, content);
-                if (!firstFileId) {
-                    firstFileId = newFile.id;
-                }
+                const newFile = createFile(fileName, projectData[fileName]);
+                if (!firstFileId) firstFileId = newFile.id;
             }
 
             if (firstFileId) {
                 appState.activeFileId = firstFileId;
-            } else {
-                // Shared project was empty, setup defaults
-                setupDefaultFiles();
+                projectLoaded = true;
             }
 
         } else if (legacyCodeString) {
-            // Legacy ?c=... parameter logic
-            
-            // *** NEW: Format the legacy code string as requested ***
+            // --- 3. Fallback: Load from ?c=... (Legacy HTML) ---
             const formattedCode = legacyCodeString.replace(/>/g, '>\n');
-
             appState.files = []; // Clear defaults
-            const newIndex = createFile('index.html', formattedCode); // Use formatted code
-            createFile('styles.css', '/* CSS */'); // Add empty files
+            const newIndex = createFile('index.html', formattedCode);
+            createFile('styles.css', '/* CSS */');
             createFile('script.js', '// JavaScript');
             appState.activeFileId = newIndex.id;
+            projectLoaded = true;
+        }
+
+        // --- 4. No URL params or load failed: Load default project ---
+        if (!projectLoaded) {
+            setupDefaultFiles();
         }
 
         // Clean the URL bar after loading
-        if (projectDataString || legacyCodeString) {
+        if (projectID || projectDataString || legacyCodeString) {
             window.history.replaceState({}, document.title, window.location.pathname);
         }
 
     } catch (e) {
         console.error("Failed to parse project data from URL:", e);
-        // If parsing fails, setup default files
+        showConfirmModal('Error Loading Project', `An error occurred while loading the project: ${e.message}. Loading default project.`, null, true);
         if (appState.files.length === 0) {
             setupDefaultFiles();
         }
     }
 }
 
-
-/**
- * Initializes the application, sets up listeners, and renders the initial state.
- */
-function init() {
-    handleUrlParameters();
-    
-    if (appState.files.length === 0) {
-        setupDefaultFiles();
-    }
-    
-    populateDomRefs();
-    setupCodeMirror();
-
-    const savedTheme = localStorage.getItem('codelab-theme') || 'light';
-    setTheme(savedTheme);
-
-    const savedFont = localStorage.getItem('codelab-font') || appState.editorFont;
-    setEditorFont(savedFont);
-
-    const savedWidth = localStorage.getItem('codelab-panel-width');
-    if (savedWidth) {
-        appState.leftPanelWidth = savedWidth;
-        dom.mainContainer.style.gridTemplateColumns = `${savedWidth} auto 1fr`;
-    }
-
-    setupEventListeners();
-
-    renderFileTabs();
-    loadFileIntoEditor(appState.activeFileId); 
-    runCode();
-    updateRunModeUI(); 
-}
 
 /**
  * Initializes the CodeMirror editor instance.
@@ -889,7 +918,7 @@ function handleDeleteFile() {
             appState.files = appState.files.filter(f => f.id !== fileIdToDelete);
             let newActiveFileId = appState.files.find(f => f.name === 'index.html')?.id;
             if (!newActiveFileId) {
-                 newActiveFileId = appState.files[0]?.id || null;
+                newActiveFileId = appState.files[0]?.id || null;
             }
             if (newActiveFileId) {
                 loadFileIntoEditor(newActiveFileId);
@@ -936,43 +965,166 @@ function handleDownloadProjectConfirm() {
         });
 }
 
-/**
- * *** UPDATED: Copies raw JSON to clipboard ***
- * Handles the "Share Project" button click
- */
-// --- REPLACE your old function ---
+// --- Google Script API Helpers ---
 
 /**
- * *** UPDATED: Copies project to clipboard using custom ✴️start...✴️end format ***
- * Handles the "Share Project" button click
+ * Parses a project string in the ✴️start...✴️end format,
+ * clears the current project, and loads the new one.
+ * @param {string} projectString The string data to import.
+ * @returns {boolean} True if parsing was successful, false otherwise.
  */
-function handleShareProject() {
-    saveCurrentFile(); // Save latest changes
-
-    try {
-        let projectString = '';
-        appState.files.forEach(file => {
-            // Build the custom string for each file
-            projectString += `✴️start:${file.name}:${file.content}✴️end\n`;
-        });
-
-        // Copy the final combined string to the clipboard
-        navigator.clipboard.writeText(projectString.trim())
-            .then(() => {
-                // Update confirmation message
-                showConfirmModal('Project String Copied!', 'A string of all your files (in ✴️...✴️ format) has been copied to the clipboard.', null, true);
-            })
-            .catch(err => {
-                console.error('Failed to copy project string: ', err);
-                showConfirmModal('Error', 'Could not copy project string. See console for details.', null, true);
-            });
-
-    } catch (e) {
-        console.error('Failed to create project string:', e);
-        showConfirmModal('Error', 'Could not create project string. See console for details.', null, true);
+function loadProjectFromString(projectString) {
+    if (!projectString || typeof projectString !== 'string') {
+        return false;
     }
+    
+    const fileRegex = /✴️start:(.*?):([\s\S]*?)✴️end/g;
+    let match;
+    let loadedFiles = [];
+
+    // First, parse all files from the string
+    while ((match = fileRegex.exec(projectString)) !== null) {
+        const fileName = match[1];
+        const content = match[2];
+        if (fileName) {
+            loadedFiles.push({ name: fileName, content: content });
+        }
+    }
+
+    // If no valid files were found, abort
+    if (loadedFiles.length === 0) {
+        return false;
+    }
+
+    // --- SUCESS: Clear old state and load new files ---
+    appState.files = [];
+    let firstFileId = null;
+
+    for (const file of loadedFiles) {
+        // Use addSpaceBetweenScriptTags for HTML files on import
+        let fileContent = file.content;
+        if (file.name.endsWith('.html')) {
+            fileContent = addSpaceBetweenScriptTags(file.content);
+        }
+
+        const newFile = createFile(file.name, fileContent);
+        if (!firstFileId) {
+            firstFileId = newFile.id;
+        }
+    }
+    
+    // Try to set index.html as active first
+    let activeFile = appState.files.find(f => f.name.toLowerCase() === 'index.html');
+    if (activeFile) {
+        appState.activeFileId = activeFile.id;
+    } else if (firstFileId) {
+        // Otherwise, set the first file as active
+        appState.activeFileId = firstFileId;
+    } else {
+        // Failsafe
+        setupDefaultFiles();
+    }
+    return true; // Indicate success
 }
 
+
+/**
+ * Generates a random 6-digit string.
+ * @returns {string}
+ */
+function generateRandom6DigitID() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/**
+ * *** UPDATED: Re-uses fetchProjectData to find an available ID ***
+ * Loops until it finds a 6-digit ID that is not in the database.
+ * @returns {Promise<string>} A unique 6-digit ID.
+ */
+async function findValid6DigitID() {
+    let attempts = 0;
+    while (attempts < 10) { // Safety break to prevent infinite loops
+        const id = generateRandom6DigitID();
+        try {
+            await fetchProjectData(id);
+            // If this succeeds, the ID *exists*, so try again.
+            // console.log(`ID ${id} already exists. Trying another.`);
+        } catch (e) {
+            // If this fails (e.g., "Project ID not found"),
+            // then the ID is *available*!
+            // console.log(`Found available ID: ${id}`);
+            return id;
+        }
+        attempts++;
+    }
+    throw new Error("Could not find a valid unique ID after 10 attempts.");
+}
+
+// --- REPLACE your old handleShareProject function with this one ---
+
+/**
+ * *** UPDATED: Submits project to Google Form in the background ***
+ * Handles the "Share Project" button click
+ */
+async function handleShareProject() {
+    saveCurrentFile(); // Save latest changes
+    showConfirmModal('Sharing...', 'Generating unique project ID... Please wait.', null, true);
+
+    try {
+        // 1. Get a unique 6-digit ID (This part is unchanged)
+        const validID = await findValid6DigitID();
+        
+        // 2. Format all code files into the ✴️...✴️ string (Unchanged)
+        let projectString = '';
+        appState.files.forEach(file => {
+            projectString += `✴️start:${file.name}:${file.content}✴️end\n`;
+        });
+        const trimmedProjectString = projectString.trim();
+
+        // 3. Construct the Google Form *submission* URL
+        const formResponseURL = 'https://docs.google.com/forms/d/e/1FAIpQLScdr7Q8hrFtQJDyQaO8yJFpmPY2VzEms3tJqBkJ2rTzZmFkzw/formResponse';
+        
+        // 4. Create the form data
+        const formData = new URLSearchParams();
+        formData.append('entry.1033909975', validID);
+        formData.append('entry.1524177429', trimmedProjectString);
+
+        // 5. Submit the form in the background
+        // We use 'no-cors' mode, which means we FIRE and FORGET.
+        // We CANNOT check the response or know if it was successful.
+        await fetch(formResponseURL, {
+            method: 'POST',
+            mode: 'no-cors', // This is required to submit to a cross-origin form
+            body: formData,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        // 6. Hide the "Sharing..." modal
+        hideActiveModal();
+        
+        // 7. Show the generated code and the URL.
+        // We are *assuming* the submission worked.
+        const projectUrl = `${window.location.origin}${window.location.pathname}?id=${validID}`;
+        navigator.clipboard.writeText(projectUrl); // Copy the link
+        
+        showConfirmModal(
+            'Project Sent!', // Changed message
+            `Your project link has been copied:\n${projectUrl}`, // Updated message
+            null, 
+            true
+        );
+
+    } catch (e) {
+        // This catch will only trigger if findValid6DigitID() fails
+        // or if the network request itself fails (e.g., no internet).
+        // It will NOT catch a "404 Not Found" from the Google Form.
+        console.error('Failed to create or send share link:', e);
+        hideActiveModal();
+        showConfirmModal('Error', `Could not share project: ${e.message}`, null, true);
+    }
+}
 
 /**
  * Handles bulk file creation from the developer modal.
@@ -1297,15 +1449,52 @@ function splitFileName(fileName) {
 }
 
 
-// --- Start the App ---
-
 /**
- * UPDATED: Robust app starter.
+ * UPDATED: Robust app starter, now async
  */
-function startApp() {
+async function startApp() {
     if (typeof CodeMirror !== 'undefined') {
         console.log("CodeMirror loaded, initializing app.");
-        init();
+        
+        // 1. Populate DOM refs FIRST. This is the critical fix.
+        //    Now, dom.confirmTitle will exist.
+        populateDomRefs();
+        
+        // 2. Setup CodeMirror (depends on populateDomRefs)
+        setupCodeMirror();
+
+        // 3. Now we can safely await the URL handler,
+        //    which is allowed to show modals.
+        await handleUrlParameters(); 
+        
+        // 4. Setup the rest of the UI
+        const savedTheme = localStorage.getItem('codelab-theme') || 'light';
+        setTheme(savedTheme);
+
+        const savedFont = localStorage.getItem('codelab-font') || appState.editorFont;
+        setEditorFont(savedFont);
+
+        const savedWidth = localStorage.getItem('codelab-panel-width');
+        if (savedWidth) {
+            appState.leftPanelWidth = savedWidth;
+            dom.mainContainer.style.gridTemplateColumns = `${savedWidth} auto 1fr`;
+        }
+
+        // 5. Setup event listeners
+        setupEventListeners();
+
+        // 6. Render the final state based on files loaded from URL
+        renderFileTabs();
+        if (appState.activeFileId) {
+            loadFileIntoEditor(appState.activeFileId); 
+        } else if (appState.files.length > 0) {
+            // Failsafe if activeFileId wasn't set
+            loadFileIntoEditor(appState.files[0].id);
+        }
+        
+        runCode();
+        updateRunModeUI(); 
+
     } else {
         console.error("startApp was called but CodeMirror is still not defined. This indicates a script loading error in codelab.html.");
     }
