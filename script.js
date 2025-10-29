@@ -2,22 +2,19 @@
 const DEFAULT_HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Project</title>
+    <title>Codelab - HTML Template</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>Hello, CodeLab - HTML!</h1>
     <p>Edit index.html, styles.css, and script.js to build your project.</p>
     <p>Try clicking this: <a href="about.html">Go to About Page</a></p>
-    <script src="script.js"><\/script>
+    <script src="script.js"></script>
 </body>
 </html>`;
 
 const DEFAULT_CSS = `body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: #f0f4f8;
     color: #333;
     padding: 2rem;
 }
@@ -28,11 +25,8 @@ h1 {
 
 /* Example for dark mode */
 .dark body {
-    background-color: #1a202c;
+    background-color: #000000ff;
     color: #e2e8f0;
-}
-.dark h1 {
-    color: #63b3ed;
 }`;
 
 const DEFAULT_JS = `console.log("Hello from script.js!");
@@ -63,7 +57,6 @@ const DEFAULT_ABOUT_HTML = `<!DOCTYPE html>
     <p><a href="index.html">Go back home</a></p>
 </body>
 </html>`;
-
 
 // --- Application State ---
 let appState = {
@@ -239,7 +232,7 @@ async function handleUrlParameters() {
 
         if (projectID) {
             // --- 1. Load from ?id=... ---
-            showConfirmModal('Loading Project...', `Fetching project ID: ${projectID}... Please wait.`, null, true);
+            showConfirmModal('Loading Project...', `Fetching project ID: ${projectID}. Please wait.`, null, true);
             try {
                 // Wait for the project data to be fetched
                 const projectString = await fetchProjectData(projectID); 
