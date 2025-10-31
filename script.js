@@ -226,7 +226,7 @@ async function handleUrlParameters() {
         const urlParams = new URLSearchParams(window.location.search);
         const projectID = urlParams.get('id');
         const projectDataString = urlParams.get('data');
-        const legacyCodeString = urlParams.get('c');
+        const legacyCodeString = urlParams.get('code');
 
         let projectLoaded = false; // Flag to skip default setup
 
