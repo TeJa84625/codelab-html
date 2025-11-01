@@ -271,7 +271,7 @@ async function handleUrlParameters() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
         const projectID = urlParams.get('id');
-        const projectDataString = urlParams.get('data');
+        // const projectDataString = urlParams.get('data');
         const legacyCodeString = urlParams.get('code');
 
         let projectLoaded = false; // Flag to skip default setup
@@ -299,23 +299,23 @@ async function handleUrlParameters() {
                 // Let it fall through to load defaults
             }
 
-        } else if (projectDataString) {
-            // --- 2. Fallback: Load from ?data=... (Base64) ---
-            const jsonString = atob(projectDataString);
-            const projectData = JSON.parse(jsonString);
+        // } else if (projectDataString) {
+        //     // --- 2. Fallback: Load from ?data=... (Base64) ---
+        //     const jsonString = atob(projectDataString);
+        //     const projectData = JSON.parse(jsonString);
             
-            appState.files = []; // Clear defaults
-            let firstFileId = null;
+        //     appState.files = []; // Clear defaults
+        //     let firstFileId = null;
             
-            for (const fileName in projectData) {
-                const newFile = createFile(fileName, projectData[fileName]);
-                if (!firstFileId) firstFileId = newFile.id;
-            }
+        //     for (const fileName in projectData) {
+        //         const newFile = createFile(fileName, projectData[fileName]);
+        //         if (!firstFileId) firstFileId = newFile.id;
+        //     }
 
-            if (firstFileId) {
-                appState.activeFileId = firstFileId;
-                projectLoaded = true;
-            }
+        //     if (firstFileId) {
+        //         appState.activeFileId = firstFileId;
+        //         projectLoaded = true;
+        //     }
 
         } else if (legacyCodeString) {
             // --- 3. Fallback: Load from ?c=... (Legacy HTML) ---
@@ -334,9 +334,9 @@ async function handleUrlParameters() {
         }
 
         // Clean the URL bar after loading
-        if (projectID || projectDataString || legacyCodeString) {
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
+        // if (projectID || projectDataString || legacyCodeString) {
+        //     window.history.replaceState({}, document.title, window.location.pathname);
+        // }
 
     } catch (e) {
         console.error("Failed to parse project data from URL:", e);
