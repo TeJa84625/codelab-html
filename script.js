@@ -10,7 +10,6 @@ const DEFAULT_HTML = `<!DOCTYPE html>
     <p>Edit index.html, styles.css, and script.js to build your project.</p>
     <p>Try clicking this: <a href="about.html">Go to About Page</a></p>
     
-    <!-- Example for JSON Fetching -->
     <div id="output">Loading JSON...</div>
 
     <script src="script.js"></script>
@@ -49,26 +48,21 @@ h1 {
 
 const DEFAULT_JS = `console.log("Hello from script.js!");
 
-// DOM is guaranteed to be ready since this script is injected at the end.
 const h1 = document.querySelector('h1');
 if (h1) {
     h1.textContent += " 👋";
 }
 
-// Example of using data.json (if you create it)
-if (window['data.json']) { // This will no longer be used, but we'll keep it
+if (window['data.json']) {
     console.log("data.json loaded (legacy):", window['data.json']);
 }
 
-// --- NEW: Fetch Example ---
-// Load JSON data from data.json
 fetch('data.json')
     .then(response => {
         if (!response.ok) throw new Error('Network response was not ok');
         return response.json();
     })
     .then(data => {
-        // Display JSON data on the page
         const output = \`
             <h2>\${data.title}</h2>
             <p>\${data.description}</p>
