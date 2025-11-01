@@ -9,6 +9,10 @@ const DEFAULT_HTML = `<!DOCTYPE html>
     <h1>Hello, CodeLab - HTML!</h1>
     <p>Edit index.html, styles.css, and script.js to build your project.</p>
     <p>Try clicking this: <a href="about.html">Go to About Page</a></p>
+    
+    <!-- Example for JSON Fetching -->
+    <div id="output">Loading JSON...</div>
+
     <script src="script.js"></script>
 </body>
 </html>`;
@@ -27,6 +31,20 @@ h1 {
 .dark body {
     background-color: #000000ff;
     color: #e2e8f0;
+}
+
+/* Styling for the JSON output example */
+#output {
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.dark #output {
+    background-color: #1a202c;
+    border-color: #4a5568;
 }`;
 
 const DEFAULT_JS = `console.log("Hello from script.js!");
@@ -38,9 +56,33 @@ if (h1) {
 }
 
 // Example of using data.json (if you create it)
-if (window['data.json']) {
-    console.log("data.json loaded:", window['data.json']);
+if (window['data.json']) { // This will no longer be used, but we'll keep it
+    console.log("data.json loaded (legacy):", window['data.json']);
 }
+
+// --- NEW: Fetch Example ---
+// Load JSON data from data.json
+fetch('data.json')
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        // Display JSON data on the page
+        const output = \`
+            <h2>\${data.title}</h2>
+            <p>\${data.description}</p>
+            <ul>
+                <li><strong>Name:</strong> \${data.user.name}</li>
+                <li><strong>Age:</strong> \${data.user.age}</li>
+                <li><strong>Email:</strong> \${data.user.email}</li>
+            </ul>
+        \`;
+        document.getElementById('output').innerHTML = output;
+    })
+    .catch(error => {
+        document.getElementById('output').innerText = 'Error loading JSON: ' + error;
+    });
 `;
 
 const DEFAULT_ABOUT_HTML = `<!DOCTYPE html>
@@ -174,6 +216,16 @@ function setupDefaultFiles() {
     createFile('styles.css', DEFAULT_CSS);
     createFile('script.js', DEFAULT_JS);
     createFile('about.html', DEFAULT_ABOUT_HTML);
+    // Create a default JSON file for the fetch example
+    createFile('data.json', JSON.stringify({
+        title: "Fetched Data",
+        description: "This content was loaded from data.json!",
+        user: {
+            name: "Alex",
+            age: 30,
+            email: "alex@example.com"
+        }
+    }, null, 2));
     appState.activeFileId = index.id; // Set index.html as active
 }
 
@@ -461,24 +513,67 @@ function compileProjectHtml(entryHtmlFileName = 'index.html') {
         }
     }
 
-    // --- 3. Inject JSON data as global JS variables ---
-    let jsonInject = '';
+    // --- 3. [NEW] Create JSON store and fetch interceptor ---
+    let fetchInterceptorScript = '';
     if (jsonFiles.length > 0) {
-        jsonInject += '<script data-filename="json-loader">\n';
+        const jsonStore = {};
         for (const file of jsonFiles) {
-            try {
-                JSON.parse(file.content);
-                jsonInject += `window['${file.name}'] = ${file.content};\n`;
-            } catch (e) {
-                console.warn(`Could not parse ${file.name}: ${e.message}`);
-                jsonInject += `console.error("CodeLab: Failed to parse ${file.name}. Check for syntax errors.");\n`;
-            }
+            // Store the raw text content
+            jsonStore[file.name] = file.content;
         }
-        jsonInject += '</script>\n';
+
+        // Create a script to intercept fetch() calls
+        fetchInterceptorScript = `
+<script data-filename="fetch-interceptor">
+    (function() {
+        const jsonFileStore = ${JSON.stringify(jsonStore)};
+        const originalFetch = window.fetch;
+
+        window.fetch = function(resource, options) {
+            let requestURL = resource;
+            if (resource instanceof Request) {
+                requestURL = resource.url;
+            }
+
+            // Clean up the URL to just the filename (basic implementation)
+            const urlParts = requestURL.split('/');
+            const fileName = urlParts[urlParts.length - 1];
+
+            if (jsonFileStore.hasOwnProperty(fileName)) {
+                // console.log('CodeLab: Intercepting fetch for "' + fileName + '"');
+                
+                // Return a Promise that resolves with a fake Response
+                return new Promise((resolve, reject) => {
+                    try {
+                        // Validate JSON syntax before creating response
+                        JSON.parse(jsonFileStore[fileName]);
+                        
+                        const responseBody = new Blob([jsonFileStore[fileName]], { type: 'application/json' });
+                        const response = new Response(responseBody, {
+                            status: 200,
+                            statusText: 'OK',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        
+                        resolve(response);
+
+                    } catch (e) {
+                        // console.error('CodeLab: Invalid JSON in ' + fileName + ':', e);
+                        reject(new TypeError('Failed to parse JSON: ' + e.message));
+                    }
+                });
+            }
+
+            // Not a local JSON file, use the real fetch
+            return originalFetch.apply(this, arguments);
+        };
+    })();
+<\/script>
+`;
     }
     
-    // Inject CSS and JSON into the head
-    finalHtml = finalHtml.replace(/<\/head>/i, `${cssInject}\n${jsonInject}\n</head>`);
+    // Inject CSS and Fetch Interceptor into the head
+    finalHtml = finalHtml.replace(/<\/head>/i, `${cssInject}\n${fetchInterceptorScript}\n</head>`);
 
 
     // --- 4. Inject JS ---
@@ -578,7 +673,8 @@ function runCode(entryHtmlFileName = 'index.html') {
 
     try {
         if (appState.newTabHandle && !appState.newTabHandle.closed) {
-            const blob = new Blob([compiledHtml], { type: 'text/html' });
+            // **FIX:** Add charset=utf-8 here for emoji
+            const blob = new Blob([compiledHtml], { type: 'text/html; charset=utf-8' });
             const url = URL.createObjectURL(blob);
             appState.newTabHandle.location.href = url;
         } else if (appState.newTabHandle && appState.newTabHandle.closed) {
@@ -603,7 +699,8 @@ function handleRunClick() {
  */
 function openNewTab(finalHtml) {
     try {
-        const blob = new Blob([finalHtml], { type: 'text/html' });
+        // **FIX:** Add charset=utf-8 here for emoji
+        const blob = new Blob([finalHtml], { type: 'text/html; charset=utf-8' });
         const url = URL.createObjectURL(blob);
         appState.newTabHandle = window.open(url, '_blank');
     } catch (e) {
