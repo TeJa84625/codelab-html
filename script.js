@@ -278,7 +278,7 @@ async function handleUrlParameters() {
 
         if (projectID) {
             // --- 1. Load from ?id=... ---
-            showConfirmModal('Loading Project...', `Fetching project ID: ${projectID}. Please wait.`, null, true);
+            showConfirmModal('Loading Project...', `Loading project ID: ${projectID}. Please wait.`, null, true);
             try {
                 // Wait for the project data to be fetched
                 const projectString = await fetchProjectData(projectID); 
@@ -1152,7 +1152,12 @@ async function findValid6DigitID() {
  */
 async function handleShareProject() {
     saveCurrentFile(); // Save latest changes
-    showConfirmModal('Sharing...', 'Generating unique project ID... Please wait.', null, true);
+    // showConfirmModal('Sharing...', 'Generating unique project ID... Please wait.', null, true);
+    showConfirmModal(
+    'Share Code Files', 
+    'Your code files are being shared publicly. Anyone with the link can access these files. Please wait while we generate a project link...', 
+    null, true );
+
 
     try {
         // 1. Get a unique 6-digit ID (This part is unchanged)
@@ -1166,7 +1171,7 @@ async function handleShareProject() {
         const trimmedProjectString = projectString.trim();
 
         // 3. Construct the Google Form *submission* URL
-        const formResponseURL = 'https://docs.google.com/forms/d/e/1FAIpQLScdr7Q8hrFtQJDyQaO8yJFpmPY2VzEms3tJqBkJ2rTzZmFkzw/formResponse';
+        const Database = ''; //https://docs.google.com/forms/d/e/1FAIpQLScdr7Q8hrFtQJDyQaO8yJFpmPY2VzEms3tJqBkJ2rTzZmFkzw/formResponse
         
         // 4. Create the form data
         const formData = new URLSearchParams();
@@ -1176,7 +1181,7 @@ async function handleShareProject() {
         // 5. Submit the form in the background
         // We use 'no-cors' mode, which means we FIRE and FORGET.
         // We CANNOT check the response or know if it was successful.
-        await fetch(formResponseURL, {
+        await fetch(Database, {
             method: 'POST',
             mode: 'no-cors', // This is required to submit to a cross-origin form
             body: formData,
