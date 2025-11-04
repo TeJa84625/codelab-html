@@ -50,11 +50,7 @@ const DEFAULT_JS = `console.log("Hello from script.js!");
 
 const h1 = document.querySelector('h1');
 if (h1) {
-    h1.textContent += " 👋";
-}
-
-if (window['data.json']) {
-    console.log("data.json loaded (legacy):", window['data.json']);
+    h1.textContent += " ♾️";
 }
 
 fetch('data.json')
