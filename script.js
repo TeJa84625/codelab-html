@@ -320,6 +320,7 @@ async function handleUrlParameters() {
             const newIndex = createFile('index.html', formattedCode);
             createFile('styles.css', '/* CSS */');
             createFile('script.js', '// JavaScript');
+            createFile('data.json', '// Json');
             appState.activeFileId = newIndex.id;
             projectLoaded = true;
         }
@@ -330,9 +331,9 @@ async function handleUrlParameters() {
         }
 
         // Clean the URL bar after loading
-        // if (projectID || projectDataString || legacyCodeString) {
-        //     window.history.replaceState({}, document.title, window.location.pathname);
-        // }
+        if (projectID || legacyCodeString) { //projectDataString
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
 
     } catch (e) {
         console.error("Failed to parse project data from URL:", e);

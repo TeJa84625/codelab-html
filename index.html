@@ -370,6 +370,32 @@
             class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md hidden dark-mode-transition fixed top-0 left-1/2 transform -translate-x-1/2 z-50 mt-4">
             <h3 class="text-lg font-semibold mb-4" id="confirm-title">Are you sure?</h3>
             <p class="mb-6" id="confirm-message">This action cannot be undone.</p>
+            <div id="confirm-loading-bar" class="mb-4 w-full flex justify-center">
+                <div class="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-500 animate-loading-bar"></div>
+                </div>
+            </div>
+            
+            <style>
+                @keyframes loading-bar {
+                    0% {
+                        transform: translateX(-100%);
+                    }
+            
+                    50% {
+                        transform: translateX(100%);
+                    }
+            
+                    100% {
+                        transform: translateX(-100%);
+                    }
+                }
+            
+                .animate-loading-bar {
+                    animation: loading-bar 2s linear infinite;
+                }
+            </style>
+            
             <div class="flex justify-end space-x-3">
                 <button type="button" id="confirm-cancel-btn"
                     class="modal-cancel-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">Cancel</button>
