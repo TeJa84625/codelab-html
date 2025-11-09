@@ -803,6 +803,17 @@ function showConfirmModal(title, message, onConfirmCallback, isInfoModal = false
     dom.confirmTitle.textContent = title;
     dom.confirmMessage.textContent = message;
 
+    const loadingBar = document.getElementById("confirm-loading-bar");
+    const confirmButton = document.getElementById("confirm-confirm-btn");
+
+    if (title === "Loading Project..." || title === "Share Code Files") {
+        loadingBar.classList.remove('hidden');
+        confirmButton.classList.add('hidden');
+    } else {
+        loadingBar.classList.add('hidden');
+        confirmButton.classList.remove('hidden');
+    }
+
     if (isInfoModal) {
         dom.confirmCancelBtn.classList.add('hidden');
         dom.confirmConfirmBtn.textContent = 'OK';
