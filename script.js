@@ -1179,7 +1179,7 @@ async function handleShareProject() {
         const trimmedProjectString = projectString.trim();
 
         // 3. Construct the Google Form *submission* URL
-        const Database = ''; //https://docs.google.com/forms/d/e/1FAIpQLScdr7Q8hrFtQJDyQaO8yJFpmPY2VzEms3tJqBkJ2rTzZmFkzw/formResponse
+        const Database = 'https://docs.google.com/forms/d/e/1FAIpQLScdr7Q8hrFtQJDyQaO8yJFpmPY2VzEms3tJqBkJ2rTzZmFkzw/formResponse'; //
         
         // 4. Create the form data
         const formData = new URLSearchParams();
