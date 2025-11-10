@@ -12,9 +12,14 @@ const DEFAULT_HTML = `<!DOCTYPE html>
     
     <div id="output">Loading JSON...</div>
 
-    <script src="script.js"></script>
+    <div class="button-container">
+        <button id="open-editor-btn" onclick="openEditor()">Open Empty Code Editor</button>
+    </div>
+
+    <script src="script.js"> </script>
 </body>
-</html>`;
+</html>
+`;
 
 const DEFAULT_CSS = `body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -44,6 +49,27 @@ h1 {
 .dark #output {
     background-color: #1a202c;
     border-color: #4a5568;
+}
+
+#open-editor-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+#open-editor-btn:hover {
+    background-color: #0056b3; 
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
 }`;
 
 const DEFAULT_JS = `console.log("Hello from script.js!");
@@ -73,6 +99,11 @@ fetch('data.json')
     .catch(error => {
         document.getElementById('output').innerText = 'Error loading JSON: ' + error;
     });
+
+    function openEditor() {
+            window.open('https://codelab-html.vercel.app?c=<!-- html -->', '_blank');
+            window.close();
+        }
 `;
 
 const DEFAULT_ABOUT_HTML = `<!DOCTYPE html>
@@ -103,6 +134,7 @@ let appState = {
     pendingImportFile: null, 
     leftPanelWidth: '1fr',
     modalStack: [],
+    _previewBlobUrl: null,
 };
 
 // --- DOM Element References ---
@@ -659,15 +691,18 @@ function compileProjectHtml(entryHtmlFileName = 'index.html') {
 function runCode(entryHtmlFileName = 'index.html') {
     saveCurrentFile(); 
     const compiledHtml = compileProjectHtml(entryHtmlFileName);
+
+    if (appState._previewBlobUrl) {
+        URL.revokeObjectURL(appState._previewBlobUrl);
+    }
+    const blob = new Blob([compiledHtml], { type: 'text/html; charset=utf-8' });
+    appState._previewBlobUrl = URL.createObjectURL(blob);
     
-    dom.previewFrame.srcdoc = compiledHtml;
+    dom.previewFrame.src = appState._previewBlobUrl;
 
     try {
         if (appState.newTabHandle && !appState.newTabHandle.closed) {
-            // **FIX:** Add charset=utf-8 here for emoji
-            const blob = new Blob([compiledHtml], { type: 'text/html; charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            appState.newTabHandle.location.href = url;
+            appState.newTabHandle.location.href = appState._previewBlobUrl;
         } else if (appState.newTabHandle && appState.newTabHandle.closed) {
             appState.newTabHandle = null; 
         }
