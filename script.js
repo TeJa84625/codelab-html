@@ -301,6 +301,7 @@ async function handleUrlParameters() {
         const projectID = urlParams.get('id');
         // const projectDataString = urlParams.get('data');
         const legacyCodeString = urlParams.get('code') || urlParams.get('c');
+        const empty = urlParams.has('empty') || urlParams.has('e');
 
         let projectLoaded = false; // Flag to skip default setup
 
@@ -350,12 +351,23 @@ async function handleUrlParameters() {
             const formattedCode = legacyCodeString.replace(/>/g, '>\n');
             appState.files = []; // Clear defaults
             const newIndex = createFile('index.html', formattedCode);
-            createFile('styles.css', '/* CSS */');
-            createFile('script.js', '// JavaScript');
-            createFile('data.json', '// Json');
+            createFile('styles.css', '/* CSS */ \n');
+            createFile('script.js', '// JavaScript \n');
+            createFile('data.json', '// Json \n');
+            appState.activeFileId = newIndex.id;
+            projectLoaded = true;
+        }   else if (empty) {
+            // --- 3. Fallback: Load from ?c=... (Legacy HTML) ---
+            appState.files = []; // Clear defaults
+            const newIndex = createFile('index.html', '<!-- Html --> \n');
+            createFile('styles.css', '/* CSS */ \n');
+            createFile('script.js', '// JavaScript \n');
+            createFile('data.json', '// Json \n');
             appState.activeFileId = newIndex.id;
             projectLoaded = true;
         }
+
+        
 
         // --- 4. No URL params or load failed: Load default project ---
         if (!projectLoaded) {
