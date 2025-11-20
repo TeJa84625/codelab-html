@@ -1210,7 +1210,7 @@ async function handleShareProject() {
     // showConfirmModal('Sharing...', 'Generating unique project ID... Please wait.', null, true);
     showConfirmModal(
     'Share Code Files', 
-    'Your code files are being shared publicly. Anyone with the link can access these files. Please wait while we generate a project link...', 
+    'Your code files are currently being shared publicly and temporarily. Anyone with the link will have access. Please hold on while we generate your project link...', 
     null, true );
 
 
