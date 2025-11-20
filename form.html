@@ -34,7 +34,6 @@
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
-        /* Custom Scrollbar for Textarea */
         textarea::-webkit-scrollbar {
             width: 8px;
         }
@@ -166,45 +165,36 @@
             const btnIcon = btn.querySelector('i');
             const successMsg = document.getElementById('successMessage');
 
-            // 1. Get values from the form
             const name = document.getElementById('name').value;
             let email = document.getElementById('email').value;
             const type = document.getElementById('type').value;
             const description = document.getElementById('message').value;
 
-            // 2. Logic for Anonymous Email
             if (!email || email.trim() === "") {
                 email = "Anonymous";
             }
 
-            // 3. UI: Change button to loading state
             btnText.textContent = 'Sending...';
             btnIcon.classList.remove('fa-paper-plane');
             btnIcon.classList.add('fa-spinner', 'fa-spin');
             btn.disabled = true;
             btn.classList.add('opacity-75', 'cursor-not-allowed');
 
-            // 4. Prepare Google Form Data
-            // NOTE: URL changed from /viewform to /formResponse
             const googleFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLScn6O63dsig6Rumjn9GblnfiVOAX64R1yletbPU-GkKD7iUwg/formResponse";
 
             const formData = new FormData();
-            formData.append("entry.744134608", name);         // Name ID
-            formData.append("entry.1805217283", email);       // Email ID
-            formData.append("entry.1491620058", type);        // Type ID
-            formData.append("entry.1574232054", description); // Description ID
+            formData.append("entry.744134608", name);
+            formData.append("entry.1805217283", email);
+            formData.append("entry.1491620058", type);
+            formData.append("entry.1574232054", description);
 
             try {
-                // 5. Send Data via Fetch
-                // mode: 'no-cors' is required for Google Forms. 
-                // We won't get a standard JSON response, but the data will submit.
                 await fetch(googleFormUrl, {
                     method: "POST",
                     mode: "no-cors",
                     body: formData
                 });
 
-                // 6. On Success
                 document.getElementById('feedbackForm').reset();
 
                 btnText.textContent = 'Submit Feedback';
@@ -220,7 +210,6 @@
                 }, 5000);
 
             } catch (error) {
-                // 7. On Error
                 console.error("Error submitting form", error);
                 btnText.textContent = 'Submit Feedback';
                 btnIcon.classList.remove('fa-spinner', 'fa-spin');
