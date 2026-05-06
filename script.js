@@ -306,13 +306,52 @@ async function handleUrlParameters() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
         const projectID = urlParams.get('id');
+        const previewID = urlParams.get('p');
         // const projectDataString = urlParams.get('data');
         const legacyCodeString = urlParams.get('code') || urlParams.get('c');
         const empty = urlParams.has('empty') || urlParams.has('e');
 
         let projectLoaded = false; // Flag to skip default setup
 
-        if (projectID) {
+        if (previewID) {
+            showConfirmModal('Loading Preview...', `Loading preview for project ID: ${previewID}. Please wait.`, null, true,true);
+
+            try {
+                const projectString = await fetchProjectData(previewID);
+                hideActiveModal();
+
+                const success = loadProjectFromString(projectString);
+
+                if (success) {
+                    projectLoaded = true;
+
+                    setTimeout(() => {
+                        const compiledHtml = compileProjectHtml('index.html');
+
+                        // iframe preview
+                        runCode('index.html');
+
+                        // 🔥 open in new tab
+                        openNewTab(compiledHtml,false);
+
+                    }, 0);
+                    window.history.replaceState({}, document.title, window.location.pathname);
+
+                } else {
+                    throw new Error("Failed to parse project data.");
+                }
+
+            } catch (e) {
+                hideActiveModal();
+                console.error("Failed to preview project:", e);
+                showConfirmModal(
+                    'Error Loading Preview',
+                    `Could not preview project with ID: ${previewID}. ${e.message}. Loading default project.`,
+                    null,
+                    true
+                );
+            }
+        }else if (projectID) {
             // --- 1. Load from ?id=... ---
             showConfirmModal('Loading Project...', `Loading project ID: ${projectID}. Please wait.`, null, true);
             try {
@@ -742,14 +781,21 @@ function handleRunClick() {
 /**
  * Opens the compiled code in a new tab.
  */
-function openNewTab(finalHtml) {
+function openNewTab(finalHtml, openInNewTab = true) {
     try {
-        // **FIX:** Add charset=utf-8 here for emoji
+        // FIX: Add charset=utf-8 here for emoji
         const blob = new Blob([finalHtml], { type: 'text/html; charset=utf-8' });
         const url = URL.createObjectURL(blob);
-        appState.newTabHandle = window.open(url, '_blank');
+
+        if (openInNewTab) {
+            appState.newTabHandle = window.open(url, '_blank');
+        } else {
+            // Load in current tab
+            window.location.href = url;
+        }
+
     } catch (e) {
-        console.error("Error opening in new tab:", e);
+        console.error("Error opening/loading HTML:", e);
         appState.newTabHandle = null;
     }
 }

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Preview</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+</head>
+
+<body class="bg-white dark:bg-gray-900">
+
+    <div id="mobile-warning" class="md:hidden fixed inset-0 w-full h-[100dvh] bg-white dark:bg-gray-900 z-[100]
+                   flex flex-col items-center justify-center text-center p-6 space-y-6">
+    
+        <i class="fas fa-mobile-screen-button text-5xl text-blue-500"></i>
+    
+        <h2 class="text-2xl font-bold">
+            Best Experience on Desktop
+        </h2>
+    
+        <p class="text-gray-700 dark:text-gray-300 max-w-md">
+            This CodeLab is optimized for larger screens.
+            You can still preview the live code below.
+        </p>
+    
+        <!-- Button -->
+        <button id="open-preview-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition">
+            Open Live Preview
+        </button>
+    
+        <!-- Hidden input section -->
+        <div id="code-input-box" class="hidden flex flex-col items-center space-y-3 w-full max-w-xs">
+            <input id="project-code" type="text" maxlength="6" placeholder="Enter 6-digit code"
+                class="w-full px-4 py-2 border rounded-lg text-center text-lg tracking-widest" />
+    
+            <button id="submit-code" class="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-lg">
+                Continue
+            </button>
+    
+            <p id="error-msg" class="text-red-500 text-sm hidden"></p>
+        </div>
+    
+        <div id="loading-state" class="hidden flex flex-col items-center justify-center space-y-4 mt-6">
+    
+            <!-- Spinner -->
+            <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    
+            <p class="text-gray-700 dark:text-gray-300 text-sm">
+                Loading project and setting up preview...
+            </p>
+        </div>
+    
+    </div>
+    
+    <script>
+        function handleMobileAccess() {
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
+            if (!isMobile) return;
+
+            const openBtn = document.getElementById("open-preview-btn");
+            const inputBox = document.getElementById("code-input-box");
+            const submitBtn = document.getElementById("submit-code");
+            const input = document.getElementById("project-code");
+            const errorMsg = document.getElementById("error-msg");
+
+            // Show input instead of prompt
+            openBtn.addEventListener("click", () => {
+                inputBox.classList.remove("hidden");
+                input.focus();
+            });
+
+            submitBtn.addEventListener("click", () => {
+                let code = input.value.replace(/\s/g, "").trim();
+
+                if (!/^\d{6}$/.test(code)) {
+                    errorMsg.textContent = "Enter a valid 6-digit code";
+                    errorMsg.classList.remove("hidden");
+                    return;
+                }
+
+                errorMsg.classList.add("hidden");
+
+                const baseUrl = window.location.origin;
+                window.location.href = `${baseUrl}?p=${code}`;
+            });
+        }
+
+        // Run on load
+        handleMobileAccess();
+    </script>
+
+</body>
+
+<script src="script.js"></script>
+
+</html>
