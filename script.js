@@ -1338,13 +1338,7 @@ async function updateProject(PID) {
         shareBtn.title = "Update Project";
     }
 
-    // showConfirmModal(
-    //     'Updating Project...',
-    //     'Updating your existing project... Please wait.',
-    //     null, true
-    // );
-
-    showConfirmModal('Loading Project...', `Loading project ID: ${PID}. Please wait.`, null, true);
+    showConfirmModal('Updating Project...', `Updating your project ID: ${PID}. Please wait.`, null, true);
 
     try {
         await submitProject(PID.substring(1), PN);
