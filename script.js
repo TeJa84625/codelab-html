@@ -140,7 +140,10 @@ let appState = {
 // --- DOM Element References ---
 const dom = {};
 let globalResponseData = null; // For debugging
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxjLTjYLoigWASxzaqx1m0dBuWtazZ3syojUGNGuWiMH0OOZicPa31f7MUWk5WXCNb9/exec';
+let PID = ""; // For debugging
+let PN = "";
+let PC = "";
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKsYTJPFAXkgm4ubhFPtVotpZJ0HpkvytcoLOAeqN8ZNHdtoPcRqXqtc91Gtivr9w3/exec';
 
 /**
  * Populates the dom object. Called once the DOM is ready.
@@ -273,6 +276,10 @@ async function fetchProjectData(id) {
         
         globalResponseData = data; // For debugging
         // console.log('Fetched Data:', data);
+
+        updateCodeDisplay("n" + (data.Name?.trim() || "Unknown") + " Project");
+        PC = data.ID;
+        PN = data.Name;
 
         if (data && data.Data) {
             return data.Data; // Resolve with the project string
@@ -1072,7 +1079,7 @@ function handleDeleteFile() {
 }
 
 function handleDownloadProject() {
-    dom.projectFolderNameInput.value = 'my-codelab-project';
+    dom.projectFolderNameInput.value = (PID.startsWith("n") && PID.length > 1) ? PID.substring(1) : 'my-codelab-project';
     showModal(dom.downloadProjectModal);
 }
 
@@ -1200,6 +1207,41 @@ async function findValid6DigitID() {
 }
 
 // --- REPLACE your old handleShareProject function with this one ---
+async function submitProject(PID, PN) {
+    // Validate PID: starts with optional letter + 6 digits
+    if (!/^[A-Z]?\d{6}$/.test(PID)) {
+        throw new Error("PID must start with a letter followed by 6 digits");
+    }
+
+    // Combine all files into one string
+    let projectString = '';
+    appState.files.forEach(file => {
+        projectString += `✴️start:${file.name}:${file.content}✴️end\n`;
+    });
+    const trimmedProjectString = projectString.trim();
+
+    // Google Form endpoint for POST
+    const Database = 'https://docs.google.com/forms/d/e/1FAIpQLSdFWM_CrpiQmgXtJsAB0Iod4wq5QYnnA5ONJ9G1VRwmpYAHhA/formResponse';
+
+    // Prepare form data for POST
+    const formData = new URLSearchParams();
+    formData.append('entry.1512763632', PID);  // 6-digit ID (removes first char if needed)
+    formData.append('entry.1652914672', PN);                // Name
+    formData.append('entry.1278179445', trimmedProjectString); // Project data
+
+    // Submit the form (cross-origin, no response due to no-cors)
+    await fetch(Database, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData,
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    });
+
+    // Optionally hide modal after submission
+    hideActiveModal();
+}
 
 /**
  * *** UPDATED: Submits project to Google Form in the background ***
@@ -1207,66 +1249,120 @@ async function findValid6DigitID() {
  */
 async function handleShareProject() {
     saveCurrentFile(); // Save latest changes
-    // showConfirmModal('Sharing...', 'Generating unique project ID... Please wait.', null, true);
-    showConfirmModal(
-    'Share Code Files', 
-    'Your code files are currently being shared publicly and temporarily. Anyone with the link will have access. Please hold on while we generate your project link...', 
-    null, true );
+    // console.log("Share button clicked. Current PID:", PID);
 
+    if (PID.startsWith("c")) {
+        updateProject(PID);
+    } else {
+
+        while (true) {
+            PN = prompt(
+                "Enter a project name (max 25 characters):",
+                ""
+            );
+
+            // user cancelled
+            if (PN === null) return;
+
+            PN = PN.trim();
+
+            // empty check
+            if (!PN) {
+                alert("Please enter a project name.");
+                continue;
+            }
+
+            // length check
+            if (PN.length > 25) {
+                alert("Project name must be 25 characters or less.");
+                continue;
+            }
+
+            break;
+        }
+
+        const finalName = PN;
+    
+        // showConfirmModal('Sharing...', 'Generating unique project ID... Please wait.', null, true);
+        showConfirmModal(
+            'Share Code Files',
+            'Your code files are currently being shared publicly and temporarily. Anyone with the link will have access. Please hold on while we generate your project link...',
+            null, true);
+
+
+        try {
+            // 1. Get a unique 6-digit ID (This part is unchanged)
+            const validID = await findValid6DigitID();
+        
+            await submitProject(validID, finalName);
+        
+            // 7. Show the generated code and the URL.
+            // We are *assuming* the submission worked.
+            const projectUrl = `${window.location.origin}${window.location.pathname}?id=${validID}`;
+            navigator.clipboard.writeText(projectUrl); // Copy the link
+        
+            showConfirmModal(
+                'Project was Live!', // Changed message
+                `Your project link has been copied:\n${projectUrl}`, // Updated message
+                null,
+                true
+            );
+
+            updateCodeDisplay("c" + validID);
+
+            // Change share button to update icon
+            const shareBtn = document.getElementById('share-btn');
+            if (shareBtn) {
+                shareBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i>`; // Update icon
+                shareBtn.title = "Update Project";
+            }
+
+        } catch (e) {
+            // This catch will only trigger if findValid6DigitID() fails
+            // or if the network request itself fails (e.g., no internet).
+            // It will NOT catch a "404 Not Found" from the Google Form.
+            console.error('Failed to create or send share link:', e);
+            hideActiveModal();
+            showConfirmModal('Error', `Could not share project: ${e.message}`, null, true);
+        }
+    }
+}
+
+async function updateProject(PID) {
+    saveCurrentFile(); // Save latest changes
+
+    // Change share button to update icon
+    const shareBtn = document.getElementById('share-btn');
+    if (shareBtn) {
+        shareBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i>`; // Update icon
+        shareBtn.title = "Update Project";
+    }
+
+    // showConfirmModal(
+    //     'Updating Project...',
+    //     'Updating your existing project... Please wait.',
+    //     null, true
+    // );
+
+    showConfirmModal('Loading Project...', `Loading project ID: ${PID}. Please wait.`, null, true);
 
     try {
-        // 1. Get a unique 6-digit ID (This part is unchanged)
-        const validID = await findValid6DigitID();
-        
-        // 2. Format all code files into the ✴️...✴️ string (Unchanged)
-        let projectString = '';
-        appState.files.forEach(file => {
-            projectString += `✴️start:${file.name}:${file.content}✴️end\n`;
-        });
-        const trimmedProjectString = projectString.trim();
+        await submitProject(PID.substring(1), PN);
 
-        // 3. Construct the Google Form *submission* URL
-        const Database = 'https://docs.google.com/forms/d/e/1FAIpQLScdr7Q8hrFtQJDyQaO8yJFpmPY2VzEms3tJqBkJ2rTzZmFkzw/formResponse'; //
-        
-        // 4. Create the form data
-        const formData = new URLSearchParams();
-        formData.append('entry.1033909975', validID);
-        formData.append('entry.1524177429', trimmedProjectString);
+        // Copy link to clipboard
+        const projectUrl = `${window.location.origin}${window.location.pathname}?id=${PID.substring(1)}`;
+        navigator.clipboard.writeText(projectUrl);
 
-        // 5. Submit the form in the background
-        // We use 'no-cors' mode, which means we FIRE and FORGET.
-        // We CANNOT check the response or know if it was successful.
-        await fetch(Database, {
-            method: 'POST',
-            mode: 'no-cors', // This is required to submit to a cross-origin form
-            body: formData,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-
-        // 6. Hide the "Sharing..." modal
-        hideActiveModal();
-        
-        // 7. Show the generated code and the URL.
-        // We are *assuming* the submission worked.
-        const projectUrl = `${window.location.origin}${window.location.pathname}?id=${validID}`;
-        navigator.clipboard.writeText(projectUrl); // Copy the link
-        
         showConfirmModal(
-            'Project Sent!', // Changed message
-            `Your project link has been copied:\n${projectUrl}`, // Updated message
-            null, 
-            true
+            'Project Updated!',
+            `Your project link has been updated and copied:\n${projectUrl}`,
+            null, true
         );
 
     } catch (e) {
-        // This catch will only trigger if findValid6DigitID() fails
-        // or if the network request itself fails (e.g., no internet).
-        // It will NOT catch a "404 Not Found" from the Google Form.
-        console.error('Failed to create or send share link:', e);
+        console.error("Failed to update project:", e);
         hideActiveModal();
-        showConfirmModal('Error', `Could not share project: ${e.message}`, null, true);
+        showConfirmModal('Error', `Could not update project: ${e.message}`, null, true);
     }
 }
 
@@ -1643,3 +1739,78 @@ async function startApp() {
         console.error("startApp was called but CodeMirror is still not defined. This indicates a script loading error in codelab.html.");
     }
 }
+
+function updateCodeDisplay(newPID) {
+    PID = newPID;
+
+    const el = document.getElementById("code-display");
+    const slash = document.getElementById("slash");
+
+    if (!PID) {
+        el.textContent = "";
+        if (slash) slash.classList.add("hidden");
+        return;
+    }
+
+    const value = PID.toString();
+    let displayCode = value;
+
+    // Remove any existing refresh icon
+    const existingRefresh = document.getElementById("refresh-icon");
+    if (existingRefresh) existingRefresh.remove();
+
+    if (value.startsWith("c")) {
+        displayCode = value.slice(1);
+        el.textContent = /^\d{6}$/.test(displayCode)
+            ? displayCode.split('').join(' ')
+            : displayCode;
+
+        // Click to copy (same as before)
+        el.style.cursor = "pointer";
+        el.title = "Click to copy ID";
+        el.onclick = () => {
+            const codeToCopy = value.slice(1);
+            navigator.clipboard.writeText(codeToCopy);
+            alert(`Copied ID: ${codeToCopy}`);
+        };
+
+    } else if (value.startsWith("n")) {
+        displayCode = value.slice(1);
+        el.textContent = displayCode;
+
+        // Show refresh icon
+        const refresh = document.createElement("span");
+        refresh.id = "refresh-icon";
+        refresh.innerHTML = '    <i class="fa-solid fa-cloud-arrow-down"></i>'; // refresh icon
+        refresh.style.cursor = "pointer";
+        refresh.title = "Click to sync Project";
+
+        refresh.onclick = () => {
+            const baseUrl = window.location.origin + window.location.pathname;
+            window.location.href = `${baseUrl}?id=${encodeURIComponent(PC)}`;
+        };
+
+        el.appendChild(refresh);
+
+        // Disable copy for this type
+        el.style.cursor = "default";
+        el.onclick = null;
+
+    } else {
+        el.textContent = value;
+
+        // Default copy behavior
+        el.style.cursor = "pointer";
+        el.title = "Click to copy ID";
+        el.onclick = () => {
+            const codeToCopy = value.slice(1);
+            navigator.clipboard.writeText(codeToCopy);
+            alert(`Copied ID: ${codeToCopy}`);
+        };
+    }
+
+    // ✅ show slash only when PID exists
+    if (slash) slash.classList.remove("hidden");
+}
+
+updateCodeDisplay(PID);

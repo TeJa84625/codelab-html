@@ -124,6 +124,35 @@
             background-color: #1f2937;
             border-right: 1px solid #374151;
         }
+
+        /* Full Screen Preview Mode Styles */
+        body.preview-mode header,
+        body.preview-mode #left-panel,
+        body.preview-mode #resize-gutter,
+        body.preview-mode #right-panel>div:first-child {
+            display: none !important;
+        }
+
+        body.preview-mode #main-container {
+            display: block !important;
+            grid-template-columns: none !important;
+        }
+
+        body.preview-mode #right-panel {
+            height: 100vh !important;
+            width: 100vw !important;
+            background: white !important;
+        }
+
+        body.preview-mode #right-panel>div.flex-grow {
+            margin: 0 !important;
+            border-radius: 0 !important;
+            height: 100vh !important;
+        }
+
+        body.preview-mode #preview-frame {
+            border-radius: 0 !important;
+        }
     </style>
 </head>
 
@@ -144,10 +173,26 @@
 
     <header
         class="flex-shrink-0 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex items-center justify-between shadow-sm z-10">
-        <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">
-            CodeLab - HTML
-        </h1>
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1">
+                <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">
+                    CodeLab - HTML
+                </h1>
+            
+                <span id="slash" class="text-xl font-bold text-blue-600 dark:text-blue-400 hidden">
+                    /
+                </span>
+            
+                <h1 id="code-display" class="text-x font-bold text-blue-600 dark:text-blue-400"></h1>
+            </div>
+        </div>
         <div class="flex items-center space-x-3">
+
+            <button id="code-btn"
+                class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
+                aria-label="I have Project Code" title="I have Project Code">
+                <i class="fa-solid fa-hashtag"></i>
+            </button>
 
             <button id="about-btn"
                 class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
@@ -181,6 +226,27 @@
         </div>
     </header>
 
+    <script>
+        document.getElementById("code-btn").addEventListener("click", function () {
+            let code = prompt("Enter 6-digit project code:");
+
+            // If user cancels
+            if (code === null) return;
+
+            code = code.replace(/\s/g, "").trim();
+
+            // Validate: exactly 6 digits
+            if (!/^\d{6}$/.test(code)) {
+                alert("Please enter a valid 6-digit code.");
+                return;
+            }
+
+            // Redirect to current URL with ?id=code
+            const baseUrl = window.location.origin + window.location.pathname;
+            window.location.href = `${baseUrl}?id=${code}`;
+        });
+    </script>
+
     <main class="flex-grow grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-0 overflow-hidden" id="main-container">
 
         <div class="flex flex-col h-full overflow-hidden bg-gray-50 dark:bg-gray-900" id="left-panel">
@@ -189,13 +255,14 @@
                 class="flex-shrink-0 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-2 py-2.5">
                 <nav class="file-tabs flex-grow flex items-center space-x-1 overflow-x-auto" id="file-tabs-container">
                 </nav>
-                
-                <button id="theme-toggle-btn" class="ml-3 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 dark-mode-transition"
+
+                <button id="theme-toggle-btn"
+                    class="ml-3 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 dark-mode-transition"
                     aria-label="Toggle dark mode">
                     <i class="fas fa-moon" id="theme-icon-moon"></i>
                     <i class="fas fa-sun hidden" id="theme-icon-sun"></i>
                 </button>
-                
+
                 <button id="add-file-btn"
                     class="flex-shrink-0 ml-3 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all"
                     aria-label="Add new file">
@@ -308,11 +375,13 @@
                 <label class="block font-medium mb-1 text-center">or</label>
                 <div class="mb-6">
                     <label class="block text-sm font-medium mb-2">Import File</label>
-                    <button id="import-file-btn" class="w-full px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">
+                    <button id="import-file-btn"
+                        class="w-full px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">
                         <i class="fas fa-upload mr-2"></i> Click to Import
                     </button>
                     <input type="file" id="import-file-input" class="hidden" accept=".html,.css,.js,.json">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Accepts .html, .css, .js, or .json files.</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Accepts .html, .css, .js, or .json files.
+                    </p>
                 </div>
             </div>
             <div class="flex justify-end space-x-3">
@@ -381,27 +450,27 @@
                     <div class="h-full bg-blue-500 animate-loading-bar"></div>
                 </div>
             </div>
-            
+
             <style>
                 @keyframes loading-bar {
                     0% {
                         transform: translateX(-100%);
                     }
-            
+
                     50% {
                         transform: translateX(100%);
                     }
-            
+
                     100% {
                         transform: translateX(-100%);
                     }
                 }
-            
+
                 .animate-loading-bar {
                     animation: loading-bar 2s linear infinite;
                 }
             </style>
-            
+
             <div class="flex justify-end space-x-3">
                 <button type="button" id="confirm-cancel-btn"
                     class="modal-cancel-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">Cancel</button>
@@ -525,6 +594,24 @@
 <script src="script.js"></script>
 
 <script>
+        // URL-based Router for Preview Mode
+        (function handleUrlRouting() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const idParam = urlParams.get('id');
+
+            if (idParam && idParam.endsWith('/preview')) {
+                document.body.classList.add('preview-mode');
+
+                // Allow script.js to load data first, then trigger run
+                window.addEventListener('load', () => {
+                    setTimeout(() => {
+                        const runBtn = document.getElementById('run-code-btn');
+                        if (runBtn) runBtn.click();
+                    }, 800);
+                });
+            }
+        })();
+
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof startApp === 'function') {
             startApp();
