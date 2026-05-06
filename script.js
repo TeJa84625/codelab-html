@@ -853,14 +853,14 @@ function setEditorFont(fontFamily) {
 /**
  * Shows a custom confirmation modal.
  */
-function showConfirmModal(title, message, onConfirmCallback, isInfoModal = false) {
+function showConfirmModal(title, message, onConfirmCallback, isInfoModal = false ,loading = false) {
     dom.confirmTitle.textContent = title;
     dom.confirmMessage.textContent = message;
 
     const loadingBar = document.getElementById("confirm-loading-bar");
     const confirmButton = document.getElementById("confirm-confirm-btn");
 
-    if (title === "Loading Project..." || title === "Share Code Files") {
+    if (title === "Loading Project..." || title === "Share Code Files" || loading === true) {
         loadingBar.classList.remove('hidden');
         confirmButton.classList.add('hidden');
     } else {
@@ -1338,7 +1338,7 @@ async function updateProject(PID) {
         shareBtn.title = "Update Project";
     }
 
-    showConfirmModal('Updating Project...', `Updating your project ID: ${PID}. Please wait.`, null, true);
+    showConfirmModal('Updating Project...', `Updating your project ID: ${PID}. Please wait.`, null, true, true);
 
     try {
         await submitProject(PID.substring(1), PN);
