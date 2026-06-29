@@ -368,8 +368,8 @@
             code = code.replace(/\s/g, "").trim();
 
             // Validate: exactly 6 digits
-            if (!/^\d{6}$/.test(code)) {
-                alert("Please enter a valid 6-digit code.");
+            if (!/^\d{6}(_admin)?$/.test(code)) {
+                alert("Please enter a valid 6-digit code or admin code.");
                 return;
             }
 

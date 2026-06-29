@@ -305,7 +305,19 @@ async function fetchProjectData(id) {
 async function handleUrlParameters() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
-        const projectID = urlParams.get('id');
+        const rawID = urlParams.get('id'); // e.g., "123456_admin" or "123456"
+
+        // Initialize your variables
+        let projectID = "";
+        let admin_access = false;
+
+        if (rawID) {
+            // 1. Set admin_access to true if the ID contains '_admin'
+            admin_access = rawID.includes('_admin');
+
+            // 2. Extract only the 6-digit code into projectID
+            projectID = rawID.split('_admin')[0];
+        }
         const previewID = urlParams.get('p');
         // const projectDataString = urlParams.get('data');
         const legacyCodeString = urlParams.get('code') || urlParams.get('c');
@@ -351,7 +363,7 @@ async function handleUrlParameters() {
                     true
                 );
             }
-        }else if (projectID) {
+        } else if (projectID) {
             // --- 1. Load from ?id=... ---
             showConfirmModal('Loading Project...', `Loading project ID: ${projectID}. Please wait.`, null, true);
             try {
@@ -363,6 +375,9 @@ async function handleUrlParameters() {
                 const success = loadProjectFromString(projectString); 
                 if (success) {
                     projectLoaded = true; // Mark as loaded
+                    if (admin_access) { 
+                        admin();
+                    }
                 } else {
                     throw new Error("Failed to parse project data from ID.");
                 }
@@ -373,25 +388,6 @@ async function handleUrlParameters() {
                 showConfirmModal('Error Loading Project', `Could not load project with ID: ${projectID}. ${e.message}. Loading default project.`, null, true);
                 // Let it fall through to load defaults
             }
-
-        // } else if (projectDataString) {
-        //     // --- 2. Fallback: Load from ?data=... (Base64) ---
-        //     const jsonString = atob(projectDataString);
-        //     const projectData = JSON.parse(jsonString);
-            
-        //     appState.files = []; // Clear defaults
-        //     let firstFileId = null;
-            
-        //     for (const fileName in projectData) {
-        //         const newFile = createFile(fileName, projectData[fileName]);
-        //         if (!firstFileId) firstFileId = newFile.id;
-        //     }
-
-        //     if (firstFileId) {
-        //         appState.activeFileId = firstFileId;
-        //         projectLoaded = true;
-        //     }
-
         } else if (legacyCodeString) {
             // --- 3. Fallback: Load from ?c=... (Legacy HTML) ---
             const formattedCode = legacyCodeString.replace(/>/g, '>\n');
@@ -1124,6 +1120,25 @@ function handleDeleteFile() {
     );
 }
 
+function admin() {
+    console.log("--- Current Variable Values ---");
+    console.log("PID:", PID);
+    console.log("PN :", PN);
+    console.log("PC :", PC);
+
+    const shareBtn = document.getElementById('share-btn');
+    if (shareBtn) {
+        shareBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i>`; // Update icon
+        shareBtn.title = "Update Project";
+    }
+    updateCodeDisplay("c" + PC);
+
+    console.log("--- Updated Variable Values ---");
+    console.log("PID:", PID);
+    console.log("PN :", PN);
+    console.log("PC :", PC);
+}
+
 function handleDownloadProject() {
     dom.projectFolderNameInput.value = (PID.startsWith("n") && PID.length > 1) ? PID.substring(1) : 'my-codelab-project';
     showModal(dom.downloadProjectModal);
@@ -1253,40 +1268,59 @@ async function findValid6DigitID() {
 }
 
 // --- REPLACE your old handleShareProject function with this one ---
-async function submitProject(PID, PN) {
-    // Validate PID: starts with optional letter + 6 digits
-    if (!/^[A-Z]?\d{6}$/.test(PID)) {
-        throw new Error("PID must start with a letter followed by 6 digits");
-    }
-
-    // Combine all files into one string
-    let projectString = '';
-    appState.files.forEach(file => {
-        projectString += `✴️start:${file.name}:${file.content}✴️end\n`;
-    });
-    const trimmedProjectString = projectString.trim();
-
-    // Google Form endpoint for POST
-    const Database = 'https://docs.google.com/forms/d/e/1FAIpQLSdFWM_CrpiQmgXtJsAB0Iod4wq5QYnnA5ONJ9G1VRwmpYAHhA/formResponse';
-
-    // Prepare form data for POST
-    const formData = new URLSearchParams();
-    formData.append('entry.1512763632', PID);  // 6-digit ID (removes first char if needed)
-    formData.append('entry.1652914672', PN);                // Name
-    formData.append('entry.1278179445', trimmedProjectString); // Project data
-
-    // Submit the form (cross-origin, no response due to no-cors)
-    await fetch(Database, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: formData,
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+async function submitProject(PID1, PN1) {
+    try {
+        // Validate PID: starts with optional letter + 6 digits
+        if (!/^[A-Z]?\d{6}$/.test(PID1)) {
+            throw new Error("PID must start with a letter followed by 6 digits");
         }
-    });
 
-    // Optionally hide modal after submission
-    hideActiveModal();
+        // Combine all files into one string
+        let projectString = '';
+        appState.files.forEach(file => {
+            projectString += `✴️start:${file.name}:${file.content}✴️end\n`;
+        });
+        const trimmedProjectString = projectString.trim();
+
+        // 50,000 character limit validation
+        if (trimmedProjectString.length > 50000) {
+            alert("The project is huge and cannot be stored. Please download it instead.");
+            hideActiveModal();
+            return false; // Return false because validation failed
+        }
+
+        // Google Form endpoint for POST
+        const Database = 'https://docs.google.com/forms/d/e/1FAIpQLSdFWM_CrpiQmgXtJsAB0Iod4wq5QYnnA5ONJ9G1VRwmpYAHhA/formResponse';
+
+        // Prepare form data for POST
+        const formData = new URLSearchParams();
+        formData.append('entry.1512763632', PID1);  // 6-digit ID
+        formData.append('entry.1652914672', PN1);   // Name
+        formData.append('entry.1278179445', trimmedProjectString); // Project data
+
+        // Submit the form (cross-origin, no response due to no-cors)
+        await fetch(Database, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: formData,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        PID = "c" + PID1; // Update global PID
+        PN = PN1;   // Update global PN
+        PC = PID1; // Update global PC (strip leading letter if present)
+
+        // Optionally hide modal after submission
+        hideActiveModal();
+        return true; // Return true on successful network dispatch
+
+    } catch (error) {
+        console.error("Submission failed:", error);
+        hideActiveModal();
+        return false; // Return false if an error occurred during fetch or validation
+    }
 }
 
 /**
@@ -1297,8 +1331,20 @@ async function handleShareProject() {
     saveCurrentFile(); // Save latest changes
     // console.log("Share button clicked. Current PID:", PID);
 
+    let projectString = '';
+    appState.files.forEach(file => {
+        projectString += `✴️start:${file.name}:${file.content}✴️end\n`;
+    });
+    const trimmedProjectString = projectString.trim();
+
+    // 50,000 character limit validation
+    if (trimmedProjectString.length > 50000) {
+        alert("The project is huge and cannot be stored. Please download it instead.");
+        return;
+    }
+
     if (PID.startsWith("c")) {
-        updateProject(PID);
+        updateProject(PID, PN);
     } else {
 
         while (true) {
@@ -1374,7 +1420,7 @@ async function handleShareProject() {
     }
 }
 
-async function updateProject(PID) {
+async function updateProject(PID, PN) {
     saveCurrentFile(); // Save latest changes
 
     // Change share button to update icon
@@ -1387,8 +1433,16 @@ async function updateProject(PID) {
     showConfirmModal('Updating Project...', `Updating your project ID: ${PID}. Please wait.`, null, true, true);
 
     try {
-        await submitProject(PID.substring(1), PN);
+        // Capture the boolean status from submitProject
+        const success = await submitProject(PID.substring(1), PN);
 
+        // If submission failed, do nothing except ensuring the active loading modal closes
+        if (!success) {
+            hideActiveModal();
+            return;
+        }
+
+        // --- SUCCESS WORKFLOW ---
         // Copy link to clipboard
         const projectUrl = `${window.location.origin}${window.location.pathname}?id=${PID.substring(1)}`;
         navigator.clipboard.writeText(projectUrl);
@@ -1400,6 +1454,7 @@ async function updateProject(PID) {
         );
 
     } catch (e) {
+        // This catches catastrophic structural runtime errors rather than standard submission failures
         console.error("Failed to update project:", e);
         hideActiveModal();
         showConfirmModal('Error', `Could not update project: ${e.message}`, null, true);
@@ -1734,7 +1789,7 @@ function splitFileName(fileName) {
  */
 async function startApp() {
     if (typeof CodeMirror !== 'undefined') {
-        console.log("CodeMirror loaded, initializing app.");
+        console.log("CodeLab - HTML loaded, initializing app.");
         
         // 1. Populate DOM refs FIRST. This is the critical fix.
         //    Now, dom.confirmTitle will exist.
@@ -1776,7 +1831,7 @@ async function startApp() {
         updateRunModeUI(); 
 
     } else {
-        console.error("startApp was called but CodeMirror is still not defined. This indicates a script loading error in codelab.html.");
+        console.error("startApp was called but CodeLab - HTML Editor is still not defined. This indicates a script loading error in codelab.html.");
     }
 }
 
