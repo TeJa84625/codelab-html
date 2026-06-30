@@ -390,12 +390,23 @@ async function handleUrlParameters() {
             }
         } else if (legacyCodeString) {
             // --- 3. Fallback: Load from ?c=... (Legacy HTML) ---
-            const formattedCode = legacyCodeString.replace(/>/g, '>\n');
+            let formattedCode;
+
+            if (legacyCodeString.startsWith('<code>')) {
+                // Format with custom logic: replace <line> with newlines and <tab> with spaces
+                const cleanString = legacyCodeString.substring(6);
+                formattedCode = cleanString
+                    .replace(/<line>/g, '\n')
+                    .replace(/<tab>/g, '    '); // Uses 4 spaces for a tab. Use '\t' if you prefer a literal tab.
+            } else {
+                // Otherwise, format like normal (newline after every >)
+                formattedCode = legacyCodeString.replace(/>/g, '>\n');
+            }
             appState.files = []; // Clear defaults
             const newIndex = createFile('index.html', formattedCode);
-            createFile('styles.css', '/* CSS */ \n');
-            createFile('script.js', '// JavaScript \n');
-            createFile('data.json', '// Json \n');
+            // createFile('styles.css', '/* CSS */ \n');
+            // createFile('script.js', '// JavaScript \n');
+            // createFile('data.json', '// Json \n');
             appState.activeFileId = newIndex.id;
             projectLoaded = true;
         }   else if (empty) {
