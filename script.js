@@ -101,8 +101,7 @@ fetch('data.json')
     });
 
     function openEditor() {
-            window.open('https://codelab-html.vercel.app?c=<!-- html -->', '_blank');
-            window.close();
+            window.open('https://codelab-html.vercel.app?c=<!-- html -->', '_self');
         }
 `;
 

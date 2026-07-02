@@ -17,24 +17,53 @@
         tailwind.config = {
             darkMode: 'class'
         }
+
+        // Initialize Theme
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
     </script>
 
     <style>
         body {
             font-family: 'Arial', sans-serif;
         }
+
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #475569;
+        }
     </style>
 </head>
 
 <body
-    class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col h-screen overflow-hidden font-sans">
+    class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col h-screen overflow-hidden font-sans transition-colors duration-200">
 
-    <!-- Header Section -->
     <header
         class="flex-shrink-0 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex items-center justify-between shadow-sm z-10">
         <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">CodeLab - Learn HTML</h1>
         <div class="flex items-center space-x-3">
-            <!-- Home Button -->
+            <button id="theme-btn"
+                class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
+                aria-label="Toggle Theme">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:block"></i>
+            </button>
             <button id="about-btn"
                 class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
                 aria-label="Open About Page" onclick="window.location.href='index.html'">
@@ -43,26 +72,263 @@
         </div>
     </header>
 
-    <!-- Main Content Section -->
-    <main class="flex-1 flex items-center justify-center p-6">
-        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-auto w-full">
-            <section>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Coming Soon</h2>
-                <p class="text-gray-600 dark:text-gray-300 mb-4">
-                    We are working hard to bring you the best HTML learning experience. Stay tuned for updates!
-                </p>
-            </section>
+    <div class="flex flex-1 overflow-hidden">
 
-            <section class="mt-6">
-                <!-- Button to navigate back to Index Page -->
-                <button onclick="window.location.href='index.html'"
-                    class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-all duration-300">
-                    Go Back to Home
-                </button>
-            </section>
-        </div>
-    </main>
+        <aside id="left-pane"
+            class="w-1/4 min-w-[250px] bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto custom-scrollbar p-4">
+            <h3 class="text-lg font-bold mb-4 text-gray-700 dark:text-gray-200 uppercase tracking-wider text-sm">Topics
+            </h3>
+            <ul id="topic-list" class="space-y-2">
+                <li class="text-gray-500 italic text-sm">Loading topics...</li>
+            </ul>
+        </aside>
 
+        <main id="right-pane"
+            class="flex-1 bg-white dark:bg-gray-900 overflow-y-auto custom-scrollbar p-8 relative flex flex-col scroll-smooth">
+            <div id="content-container" class="max-w-4xl mx-auto w-full flex-1 hidden flex flex-col">
+
+                <div id="dynamic-content" class="flex-1 pb-8">
+                </div>
+
+                <div class="flex justify-between mt-auto pt-6 border-t border-gray-200 dark:border-gray-700 pb-4">
+                    <button id="prev-btn"
+                        class="flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i> Previous
+                    </button>
+                    <button id="next-btn"
+                        class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium">
+                        Next <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="empty-state" class="flex flex-col items-center justify-center h-full text-center">
+                <i class="fas fa-code text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                <h2 class="text-2xl font-bold text-gray-500 dark:text-gray-400">Loading Content...</h2>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Theme Toggle ---
+        const themeBtn = document.getElementById('theme-btn');
+        themeBtn.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // --- State Management ---
+        let allTopics = [];
+        let currentIndex = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('learn.json')
+                .then(response => {
+                    if (!response.ok) throw new Error("Failed to load learn.json");
+                    return response.json();
+                })
+                .then(data => {
+                    allTopics = data;
+                    renderTopicList();
+                    if (allTopics.length > 0) {
+                        selectTopic(0);
+                    } else {
+                        document.querySelector('#empty-state h2').textContent = "No topics found.";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                    document.getElementById('topic-list').innerHTML = `
+                        <li class="text-red-500 text-sm">Failed to load topics. Make sure 'learn.json' exists.</li>
+                    `;
+                    document.querySelector('#empty-state h2').textContent = "Error loading data.";
+                });
+        });
+
+        function renderTopicList() {
+            const topicList = document.getElementById('topic-list');
+            topicList.innerHTML = '';
+
+            allTopics.forEach((topic, index) => {
+                const li = document.createElement('li');
+                const btn = document.createElement('button');
+
+                // Find a key that represents the main topic name (e.g. 'topic', 'topic name', 'topics')
+                const topicKey = Object.keys(topic).find(k => k.toLowerCase().startsWith('topic'));
+                const topicName = topicKey ? topic[topicKey] : `Topic ${index + 1}`;
+
+                btn.className = "w-full text-left px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none font-medium topic-btn";
+                btn.textContent = topicName;
+                btn.dataset.index = index;
+
+                btn.onclick = () => selectTopic(index);
+
+                li.appendChild(btn);
+                topicList.appendChild(li);
+            });
+        }
+
+        function selectTopic(index) {
+            if (index < 0 || index >= allTopics.length) return;
+
+            currentIndex = index;
+            const topic = allTopics[currentIndex];
+
+            // Sidebar highlight
+            document.querySelectorAll('.topic-btn').forEach((b, i) => {
+                if (i === currentIndex) {
+                    b.classList.add('bg-blue-100', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-300');
+                } else {
+                    b.classList.remove('bg-blue-100', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-300');
+                }
+            });
+
+            // Nav buttons
+            document.getElementById('prev-btn').disabled = (currentIndex === 0);
+            document.getElementById('next-btn').disabled = (currentIndex === allTopics.length - 1);
+
+            // Toggle screens
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('content-container').classList.remove('hidden');
+
+            // --- DYNAMIC RENDERING LOGIC ---
+            const dynamicContent = document.getElementById('dynamic-content');
+            dynamicContent.innerHTML = ''; // Clear old topic
+
+            for (const [key, value] of Object.entries(topic)) {
+                const lowerKey = key.toLowerCase().trim();
+
+                if (lowerKey.startsWith('topic')) {
+                    const h2 = document.createElement('h2');
+                    h2.className = 'text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6';
+                    h2.textContent = value;
+                    dynamicContent.appendChild(h2);
+                }
+                else if (lowerKey.startsWith('sub')) {
+                    const h4 = document.createElement('h4');
+                    h4.className = 'text-xl text-blue-600 dark:text-blue-400 mt-8 mb-4 font-semibold border-b border-gray-200 dark:border-gray-700 pb-2';
+                    h4.textContent = value;
+                    dynamicContent.appendChild(h4);
+                }
+                else if (lowerKey.startsWith('def')) {
+                    const div = document.createElement('div');
+                    div.className = 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg font-medium text-gray-800 dark:text-gray-200';
+                    div.textContent = value;
+                    dynamicContent.appendChild(div);
+                }
+                else if (lowerKey.startsWith('para')) {
+                    const p = document.createElement('p');
+                    p.className = 'text-gray-600 dark:text-gray-300 mb-6 leading-relaxed';
+                    p.textContent = value;
+                    dynamicContent.appendChild(p);
+                }
+                else if (lowerKey.startsWith('point')) {
+                    const ul = document.createElement('ul');
+                    ul.className = 'list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300 ml-4 mb-6';
+                    if (Array.isArray(value)) {
+                        value.forEach(point => {
+                            const li = document.createElement('li');
+                            li.textContent = point;
+                            ul.appendChild(li);
+                        });
+                    } else {
+                        // In case points is a string instead of an array
+                        const li = document.createElement('li');
+                        li.textContent = value;
+                        ul.appendChild(li);
+                    }
+                    dynamicContent.appendChild(ul);
+                }
+                else if (lowerKey.startsWith('code')) {
+                    const codeBlock = createCodeSection(value);
+                    dynamicContent.appendChild(codeBlock);
+                }
+            }
+
+            // Scroll to top on load
+            document.getElementById('right-pane').scrollTop = 0;
+        }
+
+        // Helper to generate dynamic code blocks with attached functionality
+        function createCodeSection(codeString) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'mt-6 mb-8 relative bg-gray-800 dark:bg-black rounded-lg shadow-lg overflow-hidden border border-gray-700';
+
+            // Header bar
+            const header = document.createElement('div');
+            header.className = 'flex justify-between items-center bg-gray-900 px-4 py-2 border-b border-gray-700';
+
+            const label = document.createElement('span');
+            label.className = 'text-xs text-gray-400 font-mono tracking-wider';
+            label.textContent = 'CODE';
+
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'space-x-2';
+
+            // Copy Button
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'text-xs bg-gray-700 hover:bg-gray-600 text-white py-1 px-3 rounded transition-colors';
+            copyBtn.innerHTML = '<i class="fas fa-copy mr-1"></i> Copy';
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(codeString).then(() => {
+                    const originalHTML = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Copied';
+                    copyBtn.classList.replace('bg-gray-700', 'bg-green-600');
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHTML;
+                        copyBtn.classList.replace('bg-green-600', 'bg-gray-700');
+                    }, 2000);
+                });
+            };
+
+            // Test Code Button
+            const testBtn = document.createElement('button');
+            testBtn.className = 'text-xs bg-blue-600 hover:bg-blue-500 text-white py-1 px-3 rounded transition-colors';
+            testBtn.innerHTML = '<i class="fas fa-play mr-1"></i> Test Code';
+            testBtn.onclick = () => {
+                let formattedCode = codeString
+                    .replace(/\n/g, '<line>')
+                    .replace(/\t/g, '<tab>')
+                    .replace(/    /g, '<tab>');
+
+                let encodedCode = encodeURIComponent(formattedCode);
+                const previewUrl = `https://codelab-html.vercel.app?c=<code>` + encodedCode;
+                window.open(previewUrl, '_blank');
+            };
+
+            btnContainer.appendChild(copyBtn);
+            btnContainer.appendChild(testBtn);
+            header.appendChild(label);
+            header.appendChild(btnContainer);
+
+            // Code Display
+            const pre = document.createElement('pre');
+            pre.className = 'p-4 overflow-x-auto text-sm text-green-400 font-mono';
+            const codeEl = document.createElement('code');
+            codeEl.textContent = codeString; // textContent escapes HTML safely
+
+            pre.appendChild(codeEl);
+            wrapper.appendChild(header);
+            wrapper.appendChild(pre);
+
+            return wrapper;
+        }
+
+        // --- Pagination Navigation ---
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            selectTopic(currentIndex - 1);
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            selectTopic(currentIndex + 1);
+        });
+    </script>
 </body>
 
 </html>

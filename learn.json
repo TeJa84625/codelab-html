@@ -1,0 +1,167 @@
+[
+  {
+    "topic name": "1. Document Structure & Core Fundamentals",
+    "sub 1 - Definition": "What is HTML?",
+    "def 1": "HTML (HyperText Markup Language) is the standard language used to create and structure web pages.",
+    "para 1.1 - Explain": "It acts as the skeletal framework of every website on the internet. Browsers (like Chrome or Safari) read HTML code and translate it into the visual layouts, text, and elements you interact with.",
+    "para 1.2 - Explain": "HTML consists of 'tags'—instructions wrapped in angle brackets (like `<p>`). These tags tell the browser exactly how to display the content inside them. HTML is rarely used alone today; it is typically paired with CSS for styling and JavaScript for interactivity.",
+    "points 1": [
+      "HTML stands for HyperText Markup Language.",
+      "It is not a programming language, but a markup language.",
+      "Tags are usually in pairs: an opening tag and a closing tag (e.g., <p> and </p>)."
+    ],
+    "code 1 - Example": "<h1>Hello, World!</h1>\n<p>This is my very first HTML paragraph.</p>",
+    
+    "sub 2 - Definition": "The HTML Skeleton",
+    "def 2": "Every HTML document requires a specific foundational structure to be processed correctly.",
+    "para 2.1 - Explain": "The structure begins with the `<!DOCTYPE html>` declaration, which informs the browser to use the modern HTML5 standard. Next comes the root `<html>` element that wraps everything.",
+    "para 2.2 - Explain": "Inside the root, the document splits into two parts: `<head>` (which holds metadata, the page title, and links to stylesheets—stuff the user mostly doesn't see) and `<body>` (which holds all the visible content on the webpage).",
+    "points 2": [
+      "<!DOCTYPE html> triggers HTML5 mode.",
+      "<html> is the root container.",
+      "<head> contains unseen metadata and the tab title.",
+      "<body> contains all visible text, images, and layout."
+    ],
+    "code 2 - Example": "<!DOCTYPE html>\n<html>\n<head>\n  <title>My First Page</title>\n</head>\n<body>\n  <h1>Welcome!</h1>\n</body>\n</html>",
+
+    "def 3": "HTML is the structural foundation of the web. Every page starts with a specific skeleton containing a head (for data) and a body (for visible content).",
+    "points 3": [
+      "Try modifying the <title> tag and watch the browser tab change.",
+      "Add multiple headings (h1, h2, h3) inside the body to see their default sizes."
+    ],
+    "para 3": "Let's build a simple 'Digital Profile Card'. This project will use the basic document structure, a main heading for your name, and a paragraph for your bio. We will add a touch of CSS in the `<head>` to make it look like a floating card.",
+    "code 3": "<!DOCTYPE html>\n<html>\n<head>\n  <title>My Profile</title>\n  <style>\n    body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding-top: 50px; }\n    .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; max-width: 300px; }\n    h1 { color: #333; margin-bottom: 5px; }\n    p { color: #666; line-height: 1.5; }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <h1>Alex Developer</h1>\n    <p>Hello! I am learning to code. I love building things for the web and solving problems.</p>\n  </div>\n</body>\n</html>"
+  },
+  {
+    "topic name": "2. Text Formatting, Semantics & Grouping",
+    "sub 1 - Definition": "Text Formatting & Semantic Tags",
+    "def 1": "Tags that alter the appearance and structural meaning of text.",
+    "para 1.1 - Explain": "HTML provides six hierarchical levels of headings (`<h1>` through `<h6>`). `<h1>` is the most prominent and should generally be used only once per page for the main title, as search engines rely heavily on it for SEO.",
+    "para 1.2 - Explain": "Beyond basic text, semantic formatting tags like `<strong>` (for bold/important text) and `<em>` (for italic/emphasized text) give content meaning. This helps screen readers for the visually impaired understand the tone, rather than just changing the visual look.",
+    "points 1": [
+      "<h1> to <h6> define hierarchical titles.",
+      "<p> defines standard paragraph blocks.",
+      "<strong> and <em> add semantic importance and emphasis.",
+      "<mark> applies a visual highlight."
+    ],
+    "code 1 - Example": "<p>You <strong>must</strong> remember to <mark>highlight</mark> the facts.</p>",
+    
+    "sub 2 - Definition": "Grouping with Div and Span",
+    "def 2": "Container tags used to group elements together for styling and layout.",
+    "para 2.1 - Explain": "The `<div>` tag is a 'block-level' container. It acts as an invisible box that forces a line break and takes up the full width of the screen. It is heavily used to group larger chunks of layout (like a header bar or a grid of products).",
+    "para 2.2 - Explain": "The `<span>` tag is an 'inline' container. It wraps around small pieces of content (like a single word inside a paragraph) so you can style that specific word without breaking the flow of the text. Both tags rely on 'class' and 'id' attributes to be targeted by CSS.",
+    "points 2": [
+      "<div> is a block-level wrapper (takes full width).",
+      "<span> is an inline wrapper (takes only needed width).",
+      "Classes (class=\"...\") are reusable labels for CSS.",
+      "IDs (id=\"...\") are unique labels used once per page."
+    ],
+    "code 2 - Example": "<div class=\"alert-box\">\n  <p>Warning: Server is <span style=\"color:red;\">offline</span>.</p>\n</div>",
+
+    "def 3": "Links and images make the web interconnected and visual. Lists (ul/ol) can be combined with links to create navigation menus.",
+    "points 3": [
+      "Links utilize the anchor tag `<a>` to connect web pages.",
+      "Images use the `<img>` tag with `src` and `alt` attributes.",
+      "Lists (`<ul>` and `<ol>`) group related items."
+    ],
+    "code 3 - Example": "<div class=\"link-hub\">\n  <img src=\"https://cdn-icons-png.flaticon.com/512/3135/3135715.png\" alt=\"Avatar\" class=\"avatar\">\n  <h3>My Socials</h3>\n  <ul class=\"link-list\">\n    <li><a href=\"#\">🐦 Twitter / X</a></li>\n    <li><a href=\"#\">📸 Instagram</a></li>\n    <li><a href=\"#\">💼 LinkedIn</a></li>\n  </ul>\n</div>\n\n<style>\n  .link-hub { font-family: sans-serif; text-align: center; width: 300px; background: #1e272e; color: white; padding: 20px; border-radius: 15px; }\n  .avatar { width: 80px; border-radius: 50%; border: 3px solid #0fb9b1; }\n  .link-list { list-style-type: none; padding: 0; }\n  .link-list li a {\n    display: block; background: #485460; color: white; text-decoration: none;\n    padding: 12px; margin: 10px 0; border-radius: 8px; transition: 0.3s; font-weight: bold;\n  }\n  .link-list li a:hover { background: #0fb9b1; transform: scale(1.05); }\n</style>"
+  },
+  {
+    "topic name": "3. Links, Images & Lists",
+    "sub 1 - Definition": "Hyperlinks & Navigation",
+    "def 1": "Links utilize the anchor tag `<a>` to connect web pages.",
+    "para 1.1 - Explain": "The anchor tag requires the `href` (Hypertext Reference) attribute, which tells the browser exactly where to send the user when clicked. You can link to external websites, other pages on your own site, or even email addresses.",
+    "para 1.2 - Explain": "If you want the link to open in a new, separate browser tab (so the user doesn't lose their place on your site), you add the `target=\"_blank\"` attribute.",
+    "points 1": [
+      "<a> tag creates the clickable link.",
+      "href attribute holds the destination URL.",
+      "target=\"_blank\" opens the link in a new tab."
+    ],
+    "code 1 - Example": "<a href=\"https://google.com\" target=\"_blank\">Search Google</a>",
+    
+    "sub 2 - Definition": "Images & Accessibility",
+    "def 2": "The `<img>` tag embeds visual media directly into the page.",
+    "para 2.1 - Explain": "Unlike most tags, `<img>` is 'self-closing', meaning it doesn't have an `</img>` tag. It relies entirely on attributes: `src` points to the image file, and `width` controls its size.",
+    "para 2.2 - Explain": "The `alt` (alternative text) attribute is mandatory for good web design. If the image fails to load, this text appears instead. More importantly, screen readers read this text aloud to visually impaired users so they understand what the picture shows.",
+    "points 2": [
+      "<img> is a self-closing void element.",
+      "src dictates the file path or URL.",
+      "alt provides accessibility and fallback text."
+    ],
+    "code 2 - Example": "<img src=\"logo.png\" alt=\"Company Logo\" width=\"200\">",
+
+    "def 3": "Links and images make the web interconnected and visual. Lists (ul/ol) can be combined with links to create navigation menus.",
+    "points 3": [
+      "Create a 'Top 5 Favorite Movies' ordered list.",
+      "Make an image clickable by wrapping an <img> tag inside an <a> tag."
+    ],
+    "para 3": "Let's build an 'Interactive Link Hub'. We will use an unordered list (`<ul>`) to group links, add images as icons, and use CSS to create a smooth hover effect that makes the links feel like interactive application buttons.",
+    "code 3": "<div class=\"link-hub\">\n  <img src=\"https://cdn-icons-png.flaticon.com/512/3135/3135715.png\" alt=\"Avatar\" class=\"avatar\">\n  <h3>My Socials</h3>\n  <ul class=\"link-list\">\n    <li><a href=\"#\">🐦 Twitter / X</a></li>\n    <li><a href=\"#\">📸 Instagram</a></li>\n    <li><a href=\"#\">💼 LinkedIn</a></li>\n  </ul>\n</div>\n\n<style>\n  .link-hub { font-family: sans-serif; text-align: center; width: 300px; background: #1e272e; color: white; padding: 20px; border-radius: 15px; }\n  .avatar { width: 80px; border-radius: 50%; border: 3px solid #0fb9b1; }\n  .link-list { list-style-type: none; padding: 0; }\n  .link-list li a {\n    display: block; background: #485460; color: white; text-decoration: none;\n    padding: 12px; margin: 10px 0; border-radius: 8px; transition: 0.3s; font-weight: bold;\n  }\n  .link-list li a:hover { background: #0fb9b1; transform: scale(1.05); }\n</style>"
+  },
+  {
+    "topic name": "4. Tables and Data Organization",
+    "sub 1 - Definition": "Table Structure",
+    "def 1": "Tables present tabular data in a strict row-and-column grid.",
+    "para 1.1 - Explain": "A table is constructed starting with the `<table>` container. Inside, data is organized horizontally using table rows (`<tr>`). Within these rows, standard data is placed in table data cells (`<td>`).",
+    "para 1.2 - Explain": "For column titles, we use table header cells (`<th>`). Browsers automatically render `<th>` text as bold and centered to distinguish it from regular `<td>` data.",
+    "points 1": [
+      "<table> is the main structural container.",
+      "<tr> defines a horizontal row.",
+      "<th> defines a header cell.",
+      "<td> defines a standard data cell."
+    ],
+    "code 1 - Example": "<table>\n  <tr><th>Name</th><th>Score</th></tr>\n  <tr><td>Alice</td><td>95</td></tr>\n</table>",
+    
+    "sub 2 - Definition": "Semantic Table Grouping",
+    "def 2": "Advanced tables use semantic tags to group header, body, and footer rows.",
+    "para 2.1 - Explain": "For highly structured data, developers divide tables into `<thead>` for headers, `<tbody>` for the primary content, and `<tfoot>` for summary rows (like a 'Total' row).",
+    "para 2.2 - Explain": "This semantic grouping makes it easier to style the table with CSS (e.g., giving the header a distinct color) and helps assistive technologies navigate complex datasets.",
+    "points 2": [
+      "<thead> wraps the header rows.",
+      "<tbody> wraps the main data rows.",
+      "<tfoot> wraps summary or footer rows."
+    ],
+    "code 2 - Example": "<table>\n  <thead><tr><th>Item</th><th>Cost</th></tr></thead>\n  <tbody><tr><td>Apple</td><td>$1</td></tr></tbody>\n  <tfoot><tr><th>Total</th><th>$1</th></tr></tfoot>\n</table>",
+
+    "def 3": "Tables are powerful tools for displaying structured data grids. Semantic grouping (thead, tbody) ensures your data is readable by machines and easy to style.",
+    "points 3": [
+      "Build a weekly class schedule or workout routine.",
+      "Use CSS to add a 'zebra-striping' effect (alternate background colors) to your table rows."
+    ],
+    "para3": "Let's build an 'Interactive Leaderboard Table'. We will use full semantic structure (thead, tbody), style it elegantly, and add a snippet of JavaScript so that when a user clicks a specific row, it highlights as the 'selected' winner.",
+    "ode 3": "<table class=\"leaderboard\" id=\"scoreBoard\">\n  <thead>\n    <tr><th>Rank</th><th>Player</th><th>Points</th></tr>\n  </thead>\n  <tbody>\n    <tr onclick=\"selectRow(this)\"><td>1</td><td>KnightRider</td><td>5420</td></tr>\n    <tr onclick=\"selectRow(this)\"><td>2</td><td>MageMaster</td><td>4810</td></tr>\n    <tr onclick=\"selectRow(this)\"><td>3</td><td>StealthNinja</td><td>4100</td></tr>\n  </tbody>\n</table>\n\n<style>\n  .leaderboard { width: 100%; max-width: 350px; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }\n  .leaderboard th { background-color: #6c5ce7; color: white; padding: 12px; text-align: left; }\n  .leaderboard td { padding: 10px 12px; border-bottom: 1px solid #ddd; cursor: pointer; transition: 0.2s; }\n  .leaderboard tbody tr:hover { background-color: #f1f2f6; }\n  .active-row { background-color: #fdcb6e !important; color: #2d3436; font-weight: bold; transform: scale(1.02); }\n</style>\n\n<script>\n  function selectRow(element) {\n    let rows = document.querySelectorAll('#scoreBoard tbody tr');\n    rows.forEach(r => r.classList.remove('active-row'));\n    element.classList.add('active-row');\n  }\n</script>"
+  },
+  {
+    "topic name": "5. Forms and User Input",
+    "sub 1 - Definition": "Form Structure",
+    "def 1": "Forms collect interactive data from users to be sent to a server.",
+    "para 1.1 - Explain": "The `<form>` element acts as a wrapper around all your inputs, buttons, and labels. It uses the `action` attribute to specify the URL where the data should be sent, and the `method` (like POST or GET) to define how it gets there securely.",
+    "para 1.2 - Explain": "Labels (`<label>`) are tied to inputs using the `for` attribute (which matches the input's `id`). Clicking a label automatically focuses the input, which is a major usability and accessibility boost.",
+    "points 1": [
+      "<form> wraps inputs and handles submission.",
+      "action attribute dictates where data is sent.",
+      "<label> ties text to an input for accessibility."
+    ],
+    "code 1 - Example": "<form action=\"/login\">\n  <label for=\"usr\">Name:</label>\n  <input id=\"usr\" type=\"text\">\n</form>",
+    
+    "sub 2 - Definition": "Input Types",
+    "def 2": "The `<input>` tag changes its behavior based on its `type` attribute.",
+    "para 2.1 - Explain": "HTML provides many built-in input types. Changing `<input type=\"text\">` to `type=\"password\"` automatically masks the typed characters. Using `type=\"email\"` forces mobile keyboards to show the '@' symbol and requires a valid email format.",
+    "para 2.2 - Explain": "HTML5 also supports native validation without JavaScript. Simply adding the `required` attribute to an input will prevent the form from submitting if the field is left blank.",
+    "points 2": [
+      "type=\"password\" hides characters.",
+      "type=\"email\" validates email syntax.",
+      "type=\"checkbox\" and type=\"radio\" offer multiple choice.",
+      "Adding 'required' enforces mandatory fields."
+    ],
+    "code 2 - Example": "<input type=\"email\" placeholder=\"Enter email\" required>\n<button type=\"submit\">Send</button>",
+
+    "def 3 summary": "Forms are the primary way web pages interact with users, gathering text, choices, and data. Using correct input types ensures better mobile UX and data validation.",
+    "points 3 ideas": [
+      "Build a 'Contact Me' form with Name, Email, and a multiline <textarea>.",
+      "Create a pizza order form using checkboxes for toppings and radio buttons for sizes."
+    ],
+    "para 3": "Let's build a 'Modern Newsletter Signup'. We will use a form with an email input and a submit button. Instead of sending data to a real server, we will use a snippet of JavaScript (`event.preventDefault()`) to intercept the form submission, show a fake 'Loading...' state on the button, and then display a success message.",
+    "code 3 creative": "<div class=\"form-card\">\n  <h3 id=\"formTitle\">Join the Squad</h3>\n  <form id=\"subForm\" onsubmit=\"handleForm(event)\">\n    <input type=\"email\" class=\"box\" placeholder=\"you@email.com\" required>\n    <button type=\"submit\" id=\"subBtn\">Subscribe</button>\n  </form>\n  <p id=\"successMsg\" style=\"display:none; color:#2ed573; font-weight:bold;\">Welcome aboard! 🎉</p>\n</div>\n\n<style>\n  .form-card { font-family: Arial; background: #2f3542; color: white; padding: 30px; border-radius: 10px; width: 250px; text-align: center; }\n  .box { width: 90%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: none; outline: none; }\n  #subBtn { width: 100%; padding: 10px; background: #ff4757; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }\n  #subBtn:hover { background: #ff6b81; }\n  .loading { opacity: 0.6; cursor: wait !important; }\n</style>\n\n<script>\n  function handleForm(e) {\n    e.preventDefault(); // Stops page refresh\n    let btn = document.getElementById('subBtn');\n    let form = document.getElementById('subForm');\n    let msg = document.getElementById('successMsg');\n    let title = document.getElementById('formTitle');\n    \n    btn.innerHTML = 'Sending...';\n    btn.classList.add('loading');\n    \n    // Simulate network delay\n    setTimeout(() => {\n      form.style.display = 'none';\n      title.style.display = 'none';\n      msg.style.display = 'block';\n    }, 1500);\n  }\n</script>"
+  }
+]
