@@ -101,7 +101,7 @@ fetch('data.json')
     });
 
     function openEditor() {
-            window.open('https://codelab-html.vercel.app?c=<!-- html -->', '_self');
+            window.open('https://codelab-html.vercel.app?c=<!-- html -->', '_top');
         }
 `;
 
@@ -789,15 +789,44 @@ function handleRunClick() {
  */
 function openNewTab(finalHtml, openInNewTab = true) {
     try {
-        // FIX: Add charset=utf-8 here for emoji
-        const blob = new Blob([finalHtml], { type: 'text/html; charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-
         if (openInNewTab) {
+            const blob = new Blob([finalHtml], { type: 'text/html; charset=utf-8' });
+            const url = URL.createObjectURL(blob);
             appState.newTabHandle = window.open(url, '_blank');
         } else {
-            // Load in current tab
-            window.location.href = url;
+            // Clear layout for full-page look inside the same tab
+            document.open();
+            
+            // Generate the project blob
+            const blob = new Blob([finalHtml], { type: 'text/html; charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            // Inject an iframe with a completely maxed-out Permissions Policy ('allow' attribute)
+            document.write(`
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${document.title}</title>
+                    <style>
+                        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+                        iframe { width: 100%; height: 100%; border: none; display: block; }
+                    </style>
+                </head>
+                <body>
+                    <iframe src="${url}" 
+                        allow="camera; microphone; geolocation; display-capture; clipboard-read; clipboard-write; gamepad; accelerometer; gyroscope; magnetometer">
+                    </iframe>
+                </body>
+                </html>
+            `);
+            document.close();
+
+            // Seamlessly adjust the address bar text using your global PC variable
+            if (typeof PC !== 'undefined' && PC) {
+                const newUrl = window.location.pathname + '?p=' + encodeURIComponent(PC);
+                window.history.replaceState({}, document.title, newUrl);
+            }
         }
 
     } catch (e) {
