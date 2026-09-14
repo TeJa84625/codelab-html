@@ -2,21 +2,18 @@
 const DEFAULT_HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Codelab - HTML Template</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Codelab</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background: #f4f4f9; }
+        button { background: #4f46e5; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #4338ca; }
+    </style>
 </head>
 <body>
     <h1>Hello, CodeLab - HTML!</h1>
-    <p>Edit index.html, styles.css, and script.js to build your project.</p>
-    <p>Try clicking this: <a href="about.html">Go to About Page</a></p>
-    
-    <div id="output">Loading JSON...</div>
-
     <div class="button-container">
-        <button id="open-editor-btn" onclick="openEditor()">Open Empty Code Editor</button>
+        <button onclick="window.open('https://codelab-html.vercel.app?id=999999', '_top')">Open Sample Template</button>
     </div>
-
-    <script src="script.js"> </script>
 </body>
 </html>
 `;
@@ -237,19 +234,19 @@ function addSpaceBetweenScriptTags(htmlContent) {
 function setupDefaultFiles() {
     appState.files = []; // Clear any existing
     const index = createFile('index.html', DEFAULT_HTML);
-    createFile('styles.css', DEFAULT_CSS);
-    createFile('script.js', DEFAULT_JS);
-    createFile('about.html', DEFAULT_ABOUT_HTML);
-    // Create a default JSON file for the fetch example
-    createFile('data.json', JSON.stringify({
-        title: "Fetched Data",
-        description: "This content was loaded from data.json!",
-        user: {
-            name: "Alex",
-            age: 30,
-            email: "alex@example.com"
-        }
-    }, null, 2));
+    // createFile('styles.css', DEFAULT_CSS);
+    // createFile('script.js', DEFAULT_JS);
+    // createFile('about.html', DEFAULT_ABOUT_HTML);
+    // // Create a default JSON file for the fetch example
+    // createFile('data.json', JSON.stringify({
+    //     title: "Fetched Data",
+    //     description: "This content was loaded from data.json!",
+    //     user: {
+    //         name: "Alex",
+    //         age: 30,
+    //         email: "alex@example.com"
+    //     }
+    // }, null, 2));
     appState.activeFileId = index.id; // Set index.html as active
 }
 
