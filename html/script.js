@@ -12,7 +12,7 @@ const DEFAULT_HTML = `<!DOCTYPE html>
 <body>
     <h1>Hello, CodeLab - HTML!</h1>
     <div class="button-container">
-        <button onclick="window.open(window.location.origin + '?id=999999', '_top')">Open Sample Template</button>
+        <button onclick="window.open(window.location.origin + '/html/?id=999999', '_top')">Open Sample Template</button>
     </div>
 </body>
 </html>

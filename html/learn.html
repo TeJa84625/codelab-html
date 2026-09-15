@@ -66,7 +66,7 @@
             </button>
             <button id="about-btn"
                 class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
-                aria-label="Open About Page" onclick="window.location.href='index.html'">
+                aria-label="Open About Page" onclick="window.location.href='/html'">
                 <i class="fas fa-home"></i>
             </button>
         </div>
@@ -298,7 +298,7 @@
                     .replace(/    /g, '<tab>');
 
                 let encodedCode = encodeURIComponent(formattedCode);
-                const previewUrl = `https://codelab-html.vercel.app?c=<code>` + encodedCode;
+                const previewUrl = `https://codelab-html.vercel.app/html/?c=<code>` + encodedCode;
                 window.open(previewUrl, '_blank');
             };
 
