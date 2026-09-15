@@ -1,739 +1,267 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
-
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeLab - HTML</title>
-
-    <link rel="icon"
-        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ctext x='0' y='12' font-size='12'%3E♾️%3C/text%3E%3C/svg%3E"
-        type="image/svg+xml">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Hack&family=Inconsolata&family=JetBrains+Mono&family=Roboto+Mono&family=Source+Code+Pro&display=swap"
-        rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
-
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        mono: ['"Courier New"', 'Courier', 'monospace'],
-                        'fira-code': ['"Fira Code"', 'monospace'],
-                        'consolas': ['Consolas', 'monospace'],
-                        'monaco': ['Monaco', 'monospace'],
-                        'source-code-pro': ['"Source Code Pro"', 'monospace'],
-                        'inconsolata': ['Inconsolata', 'monospace'],
-                        'hack': ['Hack', 'monospace'],
-                        'jetbrains-mono': ['"JetBrains Mono"', 'monospace'],
-                        'cascadia-code': ['"Cascadia Code"', 'monospace'],
-                        'courier-new': ['"Courier New"', 'Courier', 'monospace'],
-                        'roboto-mono': ['"Roboto Mono"', 'monospace'],
-                    },
-                },
-            },
-        }
-    </script>
-
+    <title>Codelab — Professional Online HTML IDE & Coding Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <!-- FontAwesome for professional icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        body,
-        .bg-gray-50,
-        .bg-white,
-        .bg-gray-100,
-        .bg-gray-800,
-        .bg-gray-900,
-        textarea,
-        input,
-        button,
-        iframe,
-        select,
-        .dark-mode-transition {
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-        }
-
-        .file-tabs::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .file-tabs::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        .file-tabs::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 3px;
-        }
-
-        .dark .file-tabs::-webkit-scrollbar-track {
-            background: #1f2937;
-        }
-
-        .dark .file-tabs::-webkit-scrollbar-thumb {
-            background: #4b5563;
-        }
-
-        select {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236B7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-13%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2013l128%20128c3.6%203.6%207.8%205.4%2013%205.4s9.4-1.8%2013-5.4l128-128c3.6-3.6%205.4-7.8%205.4-13%200-5-1.8-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E');
-            background-position: right 0.75rem center;
-            background-repeat: no-repeat;
-            background-size: 0.65em auto;
-            padding-right: 2.5rem;
-        }
-
-        .dark select {
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-13%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2013l128%20128c3.6%203.6%207.8%205.4%2013%205.4s9.4-1.8%2013-5.4l128-128c3.6-3.6%205.4-7.8%205.4-13%200-5-1.8-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E');
-        }
-
-        #code-editor {
-            display: none;
-        }
-
-        .CodeMirror {
-            font-family: '"Courier New"', Courier, monospace;
-            height: 100%;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .CodeMirror-gutters {
-            background-color: #f7fafc;
-            border-right: 1px solid #e2e8f0;
-        }
-
-        .dark .CodeMirror {
-            background-color: #030712;
-        }
-
-        .dark .CodeMirror-gutters {
-            background-color: #1f2937;
-            border-right: 1px solid #374151;
-        }
-
-        /* Full Screen Preview Mode Styles */
-        body.preview-mode header,
-        body.preview-mode #left-panel,
-        body.preview-mode #resize-gutter,
-        body.preview-mode #right-panel>div:first-child {
-            display: none !important;
-        }
-
-        body.preview-mode #main-container {
-            display: block !important;
-            grid-template-columns: none !important;
-        }
-
-        body.preview-mode #right-panel {
-            height: 100vh !important;
-            width: 100vw !important;
-            background: white !important;
-        }
-
-        body.preview-mode #right-panel>div.flex-grow {
-            margin: 0 !important;
-            border-radius: 0 !important;
-            height: 100vh !important;
-        }
-
-        body.preview-mode #preview-frame {
-            border-radius: 0 !important;
+        body { font-family: 'Inter', sans-serif; }
+        .code-font { font-family: 'Fira Code', monospace; }
+        .glow-effect {
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
         }
     </style>
 </head>
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-indigo-600 selection:text-white min-h-screen flex flex-col justify-between">
 
-<body
-    class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col h-screen overflow-hidden font-sans">
-
-    <div id="mobile-warning" class="md:hidden fixed inset-0 w-full h-full bg-white dark:bg-gray-900 z-[100]
-    flex flex-col items-center justify-center text-center p-6 space-y-6">
-    
-        <i class="fas fa-mobile-screen-button text-5xl text-blue-500"></i>
-    
-        <h2 id="mobile-title" class="text-2xl font-bold">
-            Best Experience on Desktop
-        </h2>
-    
-        <p id="mobile-desc" class="text-gray-700 dark:text-gray-300 max-w-md">
-            This CodeLab is optimized for larger screens.
-            You can still preview the Shared Project below.
-        </p>
-    
-        <!-- Button -->
-        <button id="open-preview-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition">
-            Open Project Preview
-        </button>
-    
-        <!-- Input box -->
-        <div id="code-input-box" class="hidden flex flex-col items-center space-y-3 w-full max-w-xs">
-    
-            <input id="project-code" type="text" maxlength="6" placeholder="Enter 6-digit code"
-                class="w-full px-4 py-2 border rounded-lg text-center text-lg tracking-widest" />
-    
-            <button id="submit-code"
-                class="bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg w-full">
-                Continue
-            </button>
-    
-            <p id="error-msg" class="text-red-500 text-sm hidden"></p>
-        </div>
-    
-        <!-- SINGLE GLOBAL MOBILE LOADER -->
-        <div id="inline-spinner"
-            class="hidden fixed inset-0 flex flex-col items-center justify-center bg-white dark:bg-gray-900 z-[200]">
-        
-            <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        
-            <p class="mt-4 text-gray-700 dark:text-gray-300 text-sm text-center">
-                Loading project and setting up preview...
-            </p>
-        </div>
-    
-    </div>
-    
-    <script>
-            (function () {
-
-                const isMobile = window.matchMedia("(max-width: 768px)").matches;
-                const params = new URLSearchParams(window.location.search);
-                const code = params.get("p");
-
-                const openBtn = document.getElementById("open-preview-btn");
-                const inputBox = document.getElementById("code-input-box");
-                const submitBtn = document.getElementById("submit-code");
-                const input = document.getElementById("project-code");
-                const errorMsg = document.getElementById("error-msg");
-
-                const title = document.querySelector("#mobile-warning h2");
-                const desc = document.querySelector("#mobile-warning p");
-                const icon = document.querySelector("#mobile-warning i");
-
-                const spinner = document.getElementById("inline-spinner");
-
-                let initialized = false;
-
-                function showLoader(message) {
-
-                    // hide UI
-                    openBtn.classList.add("hidden");
-                    inputBox.classList.add("hidden");
-
-                    // show ONLY loader (fixed overlay)
-                    spinner.classList.remove("hidden");
-
-                    title.textContent = message;
-                    desc.textContent = "Please wait while we prepare your preview...";
-
-                    icon.className = "fas fa-spinner text-5xl text-blue-500 animate-spin";
-                }
-
-                function validate() {
-                    const val = input.value.trim();
-                    submitBtn.disabled = !/^\d{6}$/.test(val);
-                }
-
-                function initUI() {
-                    if (initialized) return;
-                    initialized = true;
-
-                    openBtn.addEventListener("click", () => {
-                        inputBox.classList.remove("hidden");
-                        input.focus();
-                    });
-
-                    input.addEventListener("input", () => {
-                        errorMsg.classList.add("hidden");
-                        validate();
-                    });
-
-                    input.addEventListener("keydown", (e) => {
-                        if (e.key === "Enter") submitBtn.click();
-                    });
-
-                    submitBtn.addEventListener("click", () => {
-                        const val = input.value.trim();
-
-                        if (!/^\d{6}$/.test(val)) {
-                            errorMsg.textContent = "Enter a valid 6-digit code";
-                            errorMsg.classList.remove("hidden");
-                            return;
-                        }
-
-                        showLoader("Loading project and setting up preview...");
-
-                        setTimeout(() => {
-                            const base = window.location.origin + window.location.pathname;
-                            window.location.href = `${base}?p=${val}`;
-                        }, 800);
-                    });
-
-                    validate();
-                }
-
-                function init() {
-                    if (!isMobile) return;
-
-                    // clean state
-                    spinner.classList.add("hidden");
-
-                    if (code && /^\d{6}$/.test(code)) {
-                        showLoader("Loading project for preview...");
-                        return;
-                    }
-
-                    initUI();
-                }
-
-                init();
-
-            })();
-    </script>
-
-    <header
-        class="flex-shrink-0 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex items-center justify-between shadow-sm z-10">
-        <div class="flex items-center gap-2">
-            <div class="flex items-center gap-1">
-                <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">
-                    CodeLab - HTML
-                </h1>
-            
-                <span id="slash" class="text-xl font-bold text-blue-600 dark:text-blue-400 hidden">
-                    /
-                </span>
-            
-                <h1 id="code-display" class="text-x font-bold text-blue-600 dark:text-blue-400"></h1>
+    <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white font-bold text-lg">
+                    ♾️
+                </div>
+                <div>
+                    <span class="font-extrabold text-xl tracking-tight text-white">Codelab</span>
+                    <span class="text-xs block text-indigo-400 font-medium">Online IDE & Prototyping</span>
+                </div>
             </div>
-        </div>
-        <div class="flex items-center space-x-3">
-
-            <button id="code-btn"
-                class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
-                aria-label="I have Project Code" title="I have Project Code">
-                <i class="fa-solid fa-hashtag"></i>
-            </button>
-
-            <button id="about-btn"
-                class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
-                aria-label="Open About Page" onclick="window.open('about.html', '_blank');" title="Go to About Page">
-                <i class="fas fa-info-circle"></i>
-            </button>
-
-            <button id="developer-btn"
-                class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
-                aria-label="Open developer features" title="Developer Features">
-                <i class="fas fa-laptop-code"></i>
-            </button>
-
-            <button id="settings-btn"
-                class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
-                aria-label="Open settings" title="Settings">
-                <i class="fas fa-cog"></i>
-            </button>
-
-            <button id="report-issue-btn"
-                class="flex items-center justify-center w-10 h-10 rounded-lg text-white bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800 transition-all duration-200"
-                aria-label="Report an Issue" onclick="window.open('form.html', '_blank');" title="Report an Issue">
-                <i class="fas fa-bug"></i>
-            </button>
-
-            <button id="download-project-btn"
-                class="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition-all duration-200">
-                <i class="fas fa-download"></i>
-                <span>Download Project</span>
-            </button>
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+                <a href="#features" class="hover:text-indigo-400 transition">Features</a>
+                <a href="#languages" class="hover:text-indigo-400 transition">Supported Ecosystem</a>
+                <a href="#sharing" class="hover:text-indigo-400 transition">Sharing & URL Loading</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <a href="/html" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center space-x-2">
+                    <span>Launch IDE</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+            </div>
         </div>
     </header>
 
-    <script>
-        document.getElementById("code-btn").addEventListener("click", function () {
-            let code = prompt("Enter 6-digit project code:");
-
-            // If user cancels
-            if (code === null) return;
-
-            code = code.replace(/\s/g, "").trim();
-
-            // Validate: exactly 6 digits
-            if (!/^\d{6}(_admin)?$/.test(code)) {
-                alert("Please enter a valid 6-digit code or admin code.");
-                return;
-            }
-
-            // Redirect to current URL with ?id=code
-            const baseUrl = window.location.origin + window.location.pathname;
-            window.location.href = `${baseUrl}?id=${code}`;
-        });
-    </script>
-
-    <main class="flex-grow grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-0 overflow-hidden" id="main-container">
-
-        <div class="flex flex-col h-full overflow-hidden bg-gray-50 dark:bg-gray-900" id="left-panel">
-
-            <div
-                class="flex-shrink-0 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-2 py-2.5">
-                <nav class="file-tabs flex-grow flex items-center space-x-1 overflow-x-auto" id="file-tabs-container">
-                </nav>
-
-                <button id="theme-toggle-btn"
-                    class="ml-3 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 dark-mode-transition"
-                    aria-label="Toggle dark mode">
-                    <i class="fas fa-moon" id="theme-icon-moon"></i>
-                    <i class="fas fa-sun hidden" id="theme-icon-sun"></i>
-                </button>
-
-                <button id="add-file-btn"
-                    class="flex-shrink-0 ml-3 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all"
-                    aria-label="Add new file">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
-
-            <div
-                class="flex-shrink-0 flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
-                <span class="font-mono font-semibold" id="current-file-name">index.html</span>
-                <div class="flex items-center space-x-4">
-
-                    <button id="copy-file-btn"
-                        class="flex items-center space-x-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"
-                        aria-label="Copy file content">
-                        <i class="fas fa-copy w-4 h-4"></i>
-                        <span>Copy</span>
-                    </button>
-                    <button id="rename-file-btn"
-                        class="flex items-center space-x-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"
-                        aria-label="Rename file">
-                        <i class="fas fa-pencil-alt w-4 h-4"></i>
-                        <span>Rename</span>
-                    </button>
-                    <button id="delete-file-btn"
-                        class="flex items-center space-x-1.5 text-sm text-red-500 hover:text-red-700"
-                        aria-label="Delete file">
-                        <i class="fas fa-trash w-4 h-4"></i>
-                        <span>Delete</span>
-                    </button>
+    <main class="flex-grow">
+        <div class="relative overflow-hidden py-20 lg:py-28">
+            <div class="absolute inset-0 glow-effect pointer-events-none"></div>
+            <div class="max-w-7xl mx-auto px-6 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                        <div class="inline-flex items-center space-x-2 bg-indigo-950/80 border border-indigo-800/60 text-indigo-300 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-inner">
+                            <i class="fa-solid fa-bolt text-indigo-400"></i>
+                            <span>Lightning Fast, Offline-Capable HTML IDE</span>
+                        </div>
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                            Build, Test & Prototype Web Apps <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">Instantly.</span>
+                        </h1>
+                        <p class="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto lg:mx-0">
+                            Codelab is a powerful online coding platform designed for developers. Create multi-file projects featuring HTML, CSS, JS, and JSON assets with instant live previews and total offline support.
+                        </p>
+                        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                            <a href="/html" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-8 py-3.5 rounded-xl transition shadow-xl shadow-indigo-600/30 flex items-center justify-center space-x-3 text-base">
+                                <i class="fa-solid fa-play"></i>
+                                <span>Open HTML Editor</span>
+                            </a>
+                            <a href="#features" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-semibold px-8 py-3.5 rounded-xl transition flex items-center justify-center space-x-2 text-base">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>Explore Features</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- IDE Mockup Preview Box -->
+                    <div class="lg:col-span-5">
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+                            <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+                                <div class="flex space-x-2">
+                                    <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                                </div>
+                                <div class="text-xs text-slate-400 font-mono flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-lock text-emerald-400 text-[10px]"></i>
+                                    <span>codelab/workspace.html</span>
+                                </div>
+                                <i class="fa-solid fa-ellipsis-vertical text-slate-600"></i>
+                            </div>
+                            <div class="p-5 code-font text-xs sm:text-sm text-slate-300 space-y-2 bg-slate-900/50">
+                                <p><span class="text-indigo-400">&lt;!DOCTYPE</span> <span class="text-amber-400">html</span><span class="text-indigo-400">&gt;</span></p>
+                                <p><span class="text-indigo-400">&lt;html</span> <span class="text-teal-400">lang</span>=<span class="text-emerald-300">"en"</span><span class="text-indigo-400">&gt;</span></p>
+                                <p class="pl-4"><span class="text-indigo-400">&lt;head&gt;</span></p>
+                                <p class="pl-8"><span class="text-indigo-400">&lt;title&gt;</span>Codelab Studio<span class="text-indigo-400">&lt;/title&gt;</span></p>
+                                <p class="pl-8"><span class="text-indigo-400">&lt;link</span> <span class="text-teal-400">href</span>=<span class="text-emerald-300">"style.css"</span> <span class="text-teal-400">rel</span>=<span class="text-emerald-300">"stylesheet"</span><span class="text-indigo-400">&gt;</span></p>
+                                <p class="pl-4"><span class="text-indigo-400">&lt;/head&gt;</span></p>
+                                <p class="pl-4"><span class="text-indigo-400">&lt;body&gt;</span></p>
+                                <p class="pl-8 text-slate-500">&lt;!-- Live multi-page workspace & assets --&gt;</p>
+                                <p class="pl-8"><span class="text-indigo-400">&lt;h1&gt;</span>Hello, Codelab!<span class="text-indigo-400">&lt;/h1&gt;</span></p>
+                                <p class="pl-4"><span class="text-indigo-400">&lt;/body&gt;</span></p>
+                                <p><span class="text-indigo-400">&lt;/html&gt;</span></p>
+                            </div>
+                            <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                                <span class="flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>Ready (Offline Mode Active)</span></span>
+                                <span class="text-indigo-400 font-semibold">HTML / CSS / JS / JSON</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="flex-grow relative min-h-0">
-                <textarea id="code-editor"
-                    class="w-full h-full p-4 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-0 focus:ring-0 resize-none outline-none leading-relaxed"
-                    spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
             </div>
         </div>
 
-        <div id="resize-gutter"
-            class="hidden md:block w-2 bg-gray-200 dark:bg-gray-700 cursor-col-resize hover:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200"
-            style="touch-action: none;"></div>
-
-        <div class="flex flex-col h-full overflow-hidden bg-gray-100 dark:bg-gray-800" id="right-panel">
-
-            <div
-                class="flex-shrink-0 flex items-center space-x-3 p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-                <button id="run-code-btn"
-                    class="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200">
-                    <i class="fas fa-play-circle w-4 h-4"></i>
-                    <span>Run</span>
-                </button>
-
-                <button id="run-new-tab-btn"
-                    class="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-700 transition-all duration-200">
-                    <i class="fas fa-window-restore w-4 h-4"></i>
-                    <span>Run in New Tab</span>
-                </button>
-
-                <button id="share-btn"
-                    class="flex items-center justify-center space-x-2 bg-yellow-500 text-white p-3 rounded-lg shadow-md hover:bg-yellow-600 transition-all duration-200">
-                    <i class="fas fa-share-alt w-4 h-4"></i>
-                </button>
-
-
-            </div>
-
-            <div class="flex-grow relative bg-white m-2 rounded-lg shadow-inner dark:bg-black">
-                <div id="new-tab-message-panel"
-                    class="w-full h-full flex flex-col items-center justify-center p-4 text-center text-gray-500 dark:text-gray-400 hidden">
-                    <i class="fas fa-window-restore text-6xl mb-4"></i>
-                    <h3 class="text-xl font-semibold">Preview is Live in New Tab</h3>
-                    <p class="mt-2">Your code is running in a separate tab. Click "Run" to preview it here again.</p>
-
-                    <button id="update-new-tab-btn"
-                        class="mt-4 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
-                        <i class="fas fa-sync-alt mr-2 transition-transform duration-300 ease-in-out"
-                            id="update-icon"></i>Update Tab
-                    </button>
+        <section id="languages" class="py-20 bg-slate-900/40 border-y border-slate-800/80">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Full-Stack Ecosystem Support</h2>
+                    <p class="text-slate-400 text-base">Codelab is purpose-built for comprehensive web prototyping, seamlessly handling multiple file types and media assets in a unified interface.</p>
                 </div>
-
-                <iframe id="preview-frame" class="w-full h-full border-0 rounded-lg"
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-top-navigation-by-user-activation"
-                    allow="camera; microphone; geolocation; display-capture; clipboard-read; clipboard-write; gamepad; accelerometer; gyroscope; magnetometer"
-                    title="Code Preview"></iframe>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- HTML Card -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-indigo-500/50 transition group">
+                        <div class="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                            <i class="fa-brands fa-html5"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">HTML5 Structure</h3>
+                        <p class="text-slate-400 text-sm">Write semantic markup with multi-page support, clean indentation, and live inspection elements.</p>
+                    </div>
+                    <!-- CSS Card -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-indigo-500/50 transition group">
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                            <i class="fa-brands fa-css3-alt"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">CSS Stylesheets</h3>
+                        <p class="text-slate-400 text-sm">Style your projects with custom stylesheets, responsive layouts, flexbox, and modern CSS3 animations.</p>
+                    </div>
+                    <!-- JavaScript Card -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-indigo-500/50 transition group">
+                        <div class="w-12 h-12 rounded-xl bg-yellow-500/10 text-yellow-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                            <i class="fa-brands fa-js"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">JavaScript Logic</h3>
+                        <p class="text-slate-400 text-sm">Add dynamic interactivity, event handlers, and asynchronous scripts executed instantly in preview.</p>
+                    </div>
+                    <!-- JSON & Images Card -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-indigo-500/50 transition group">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-file-code"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">JSON & Media Assets</h3>
+                        <p class="text-slate-400 text-sm">Manage configuration files in JSON and import local images or graphics directly into your workspace.</p>
+                    </div>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <section id="features" class="py-24">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Engineered for Maximum Productivity</h2>
+                    <p class="text-slate-400 text-base">Everything you need to write code quickly, test cleanly, and collaborate effectively.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-8 rounded-2xl hover:bg-slate-900 transition">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center mb-4 text-lg">
+                            <i class="fa-solid fa-wifi-slash"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Complete Offline Mode</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">Once your project is loaded into the platform, Codelab functions entirely offline so you can keep coding without interruption.</p>
+                    </div>
+                    <!-- Feature 2 -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-8 rounded-2xl hover:bg-slate-900 transition">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center mb-4 text-lg">
+                            <i class="fa-solid fa-desktop"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Real-Time Live Preview</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">Switch between coding and preview modes instantly, or use "Run in New Tab" to inspect your webpage in a separate window.</p>
+                    </div>
+                    <!-- Feature 3 -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-8 rounded-2xl hover:bg-slate-900 transition">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center mb-4 text-lg">
+                            <i class="fa-solid fa-file-import"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Easy File Import & Export</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">Import files from your local system into the workspace instantly, or download your entire multi-file project as a ZIP package.</p>
+                    </div>
+                    <!-- Feature 4 -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-8 rounded-2xl hover:bg-slate-900 transition">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center mb-4 text-lg">
+                            <i class="fa-solid fa-sliders"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Customizable Editor Settings</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">Personalize your development environment by choosing color themes, adjusting indentation rules, and toggling line numbers.</p>
+                    </div>
+                    <!-- Feature 5 -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-8 rounded-2xl hover:bg-slate-900 transition">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center mb-4 text-lg">
+                            <i class="fa-solid fa-code-merge"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Multi-File Project Architecture</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">Work with multiple interconnected files simultaneously in a single project tab without cluttering your browser window.</p>
+                    </div>
+                    <!-- Feature 6 -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-8 rounded-2xl hover:bg-slate-900 transition">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center mb-4 text-lg">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Free & Open-Source</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">100% free with no locked premium tiers or hidden paywalls. Inspect, contribute, and fork on GitHub anytime.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sharing" class="py-20 bg-slate-900/40 border-t border-slate-800/80">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="space-y-6">
+                        <div class="inline-flex items-center space-x-2 bg-indigo-950/80 border border-indigo-800/60 text-indigo-300 px-3.5 py-1.5 rounded-full text-xs font-semibold">
+                            <i class="fa-solid fa-link text-indigo-400"></i>
+                            <span>Instant URL Project Sharing</span>
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Share Live Code Snippets via Simple Links</h2>
+                        <p class="text-slate-400 text-base leading-relaxed">
+                            Need to share a quick snippet or demo with a colleague or student? Codelab allows you to load predefined projects directly into the editor using clean URL parameters.
+                        </p>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 code-font text-xs text-indigo-300 overflow-x-auto">
+                            https://codelab-html.vercel.app/html/?c=Basic+html+code
+                        </div>
+                        <p class="text-slate-500 text-xs">Anyone clicking the link instantly launches the workspace loaded with your exact code.</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-indigo-950/40 to-slate-900 border border-indigo-500/30 p-8 rounded-3xl space-y-6">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-rocket"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">Ready to start building?</h3>
+                                <p class="text-slate-400 text-sm">Jump into the editor right now with zero installation required.</p>
+                            </div>
+                        </div>
+                        <a href="/html" class="block w-full bg-indigo-600 hover:bg-indigo-500 text-white text-center font-semibold py-4 rounded-xl transition shadow-xl shadow-indigo-600/30">
+                            Launch Codelab HTML Editor
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 hidden"
-        role="dialog" aria-modal="true">
-
-        <div id="add-file-modal"
-            class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md hidden dark-mode-transition">
-            <h3 class="text-lg font-semibold mb-4">Create New File</h3>
-            <div class="mb-4">
-                <label for="new-file-name" class="block text-sm font-medium mb-1">File Name (without extension)</label>
-                <div class="flex space-x-2">
-                    <input type="text" id="new-file-name"
-                        class="flex-grow w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
-                        placeholder="e.g., app or contact">
-                    <select id="new-file-extension"
-                        class="flex-shrink-0 px-6 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
-                        <option value=".html">.html</option>
-                        <option value=".css">.css</option>
-                        <option value=".js">.js</option>
-                        <option value=".json">.json</option>
-                    </select>
-                </div>
-                <label class="block font-medium mb-1 text-center">or</label>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium mb-2">Import File</label>
-                    <button id="import-file-btn"
-                        class="w-full px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">
-                        <i class="fas fa-upload mr-2"></i> Click to Import
-                    </button>
-                    <input type="file" id="import-file-input" class="hidden" accept=".html,.css,.js,.json">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Accepts .html, .css, .js, or .json files.
-                    </p>
-                </div>
+    <footer class="border-t border-slate-800/80 bg-slate-950 py-12">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500 gap-6">
+            <div class="flex items-center space-x-3">
+                <span class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs"><i class="fa-solid fa-code"></i></span>
+                <span class="font-bold text-slate-300">Codelab</span>
+                <span>© 2026. Open source under MIT License.</span>
             </div>
-            <div class="flex justify-end space-x-3">
-                <button type="button"
-                    class="modal-cancel-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">
-                    <i class="fas fa-times-circle mr-2"></i> Cancel
-                </button>
-                <button type="button" id="create-file-confirm-btn"
-                    class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
-                    <i class="fas fa-check-circle mr-2"></i> Create
-                </button>
+            <div class="flex space-x-8">
+                <a href="/html" class="hover:text-indigo-400 transition">Editor (/html)</a>
+                <a href="#features" class="hover:text-indigo-400 transition">Documentation</a>
             </div>
         </div>
-
-        <div id="rename-file-modal"
-            class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md hidden dark-mode-transition">
-            <h3 class="text-lg font-semibold mb-4">Rename File</h3>
-            <div class="mb-4">
-                <label for="rename-file-name" class="block text-sm font-medium mb-1">New File Name (without
-                    extension)</label>
-                <div class="flex space-x-2">
-                    <input type="text" id="rename-file-name"
-                        class="flex-grow w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
-                        placeholder="e.g., new-name">
-                    <select id="rename-file-extension" disabled
-                        class="flex-shrink-0 px-6 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
-                        <option value=".html">.html</option>
-                        <option value=".css">.css</option>
-                        <option value=".js">.js</option>
-                        <option value=".json">.json</option>
-                    </select>
-                </div>
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button type="button"
-                    class="modal-cancel-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">Cancel
-                </button>
-                <button type="button" id="rename-file-confirm-btn"
-                    class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Rename</button>
-            </div>
-        </div>
-
-        <div id="download-project-modal"
-            class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md hidden dark-mode-transition">
-            <h3 class="text-lg font-semibold mb-4">Download Project</h3>
-            <div class="mb-4">
-                <label for="project-folder-name" class="block text-sm font-medium mb-1">Project Folder Name</label>
-                <input type="text" id="project-folder-name"
-                    class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
-                    value="my-codelab-project">
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button type="button"
-                    class="modal-cancel-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">Cancel</button>
-                <button type="button" id="download-project-confirm-btn"
-                    class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Download .zip</button>
-            </div>
-        </div>
-
-        <div id="confirm-modal"
-            class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md hidden dark-mode-transition fixed top-0 left-1/2 transform -translate-x-1/2 z-50 mt-4">
-            <h3 class="text-lg font-semibold mb-4" id="confirm-title">Are you sure?</h3>
-            <p class="mb-6" id="confirm-message">This action cannot be undone.</p>
-            <div id="confirm-loading-bar" class="mb-4 w-full flex justify-center">
-                <div class="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div class="h-full bg-blue-500 animate-loading-bar"></div>
-                </div>
-            </div>
-
-            <style>
-                @keyframes loading-bar {
-                    0% {
-                        transform: translateX(-100%);
-                    }
-
-                    50% {
-                        transform: translateX(100%);
-                    }
-
-                    100% {
-                        transform: translateX(-100%);
-                    }
-                }
-
-                .animate-loading-bar {
-                    animation: loading-bar 2s linear infinite;
-                }
-            </style>
-
-            <div class="flex justify-end space-x-3">
-                <button type="button" id="confirm-cancel-btn"
-                    class="modal-cancel-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">Cancel</button>
-                <button type="button" id="confirm-confirm-btn"
-                    class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Confirm</button>
-            </div>
-        </div>
-
-        <div id="settings-modal"
-            class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md hidden dark-mode-transition">
-            <h3 class="text-lg font-semibold mb-6">Settings</h3>
-
-            <div class="mb-4">
-                <label for="font-select" class="block text-sm font-medium mb-2">Editor Font</label>
-                <select id="font-select"
-                    class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
-                    <option style="font-family: 'Fira Code', monospace;" value="'Fira Code', monospace">Fira Code
-                    </option>
-                    <option style="font-family: 'JetBrains Mono', monospace;" value="'JetBrains Mono', monospace">
-                        JetBrains Mono</option>
-                    <option style="font-family: 'Source Code Pro', monospace;" value="'Source Code Pro', monospace">
-                        Source Code Pro</option>
-                    <option style="font-family: 'Hack', monospace;" value="'Hack', monospace">Hack</option>
-                    <option style="font-family: 'Roboto Mono', monospace;" value="'Roboto Mono', monospace">Roboto Mono
-                    </option>
-                    <option style="font-family: 'Inconsolata', monospace;" value="'Inconsolata', monospace">Inconsolata
-                    </option>
-                    <option style="font-family: 'Cascadia Code', monospace;" value="'Cascadia Code', monospace">Cascadia
-                        Code</option>
-                    <option style="font-family: Consolas, monospace;" value="Consolas, monospace">Consolas</option>
-                    <option style="font-family: Monaco, monospace;" value="Monaco, monospace">Monaco</option>
-                    <option style="font-family: 'Courier New', Courier, monospace;"
-                        value="'Courier New', Courier, monospace">Courier New</option>
-                </select>
-            </div>
-
-            <div class="flex justify-end space-x-3">
-                <button type="button"
-                    class="modal-cancel-btn px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
-                    Close
-                </button>
-            </div>
-        </div>
-
-        <div id="developer-modal"
-            class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md hidden dark-mode-transition">
-            <h3 class="text-lg font-semibold mb-6">Developer Features</h3>
-
-            <div class="mb-6">
-                <label for="bulk-file-names-input" class="block text-sm font-medium mb-2">Bulk Create Files</label>
-                <input type="text" id="bulk-file-names-input"
-                    class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
-                    placeholder="e.g., about.html, data.json, app.js">
-                <button id="bulk-create-btn"
-                    class="mt-2 w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
-                    Create Files
-                </button>
-            </div>
-
-            <div class="mb-6">
-                <label class="block text-sm font-medium mb-2">Import File</label>
-                <button id="import-file-btn"
-                    class="w-full px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">
-                    <i class="fas fa-upload mr-2"></i> Click to Import
-                </button>
-                <input type="file" id="import-file-input" class="hidden" accept=".html,.css,.js,.json">
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Accepts .html, .css, .js, or .json files.</p>
-            </div>
-
-            <div class="flex justify-end space-x-3">
-                <button type="button"
-                    class="modal-cancel-btn px-5 py-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">
-                    Close
-                </button>
-            </div>
-        </div>
-
-        <div id="import-rename-modal"
-            class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md hidden dark-mode-transition">
-            <h3 class="text-lg font-semibold mb-4">File Name Conflict</h3>
-            <p id="import-conflict-message" class="text-sm mb-4">A file with this name already exists. Please provide a
-                new name.</p>
-            <div class="mb-4">
-                <label for="import-rename-name" class="block text-sm font-medium mb-1">New File Name</LAbel>
-                <div class="flex space-x-2">
-                    <input type="text" id="import-rename-name"
-                        class="flex-grow w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
-                        placeholder="e.g., new-file-name">
-                    <select id="import-rename-extension" disabled
-                        class="flex-shrink-0 px-6 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
-                        <option value=".html">.html</option>
-                        <option value=".css">.css</option>
-                        <option value=".js">.js</option>
-                        <option value=".json">.json</option>
-                    </select>
-                </div>
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button type="button"
-                    class="modal-cancel-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">Cancel
-                </button>
-                <button type="button" id="import-rename-confirm-btn"
-                    class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Confirm & Import</button>
-            </div>
-        </div>
-
-
-    </div>
+    </footer>
 
 </body>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
-
-<script src="script.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if (typeof startApp === 'function') {
-            startApp();
-        } else {
-            console.error("Failed to find startApp function. script.js might be broken.");
-        }
-    });
-</script>
-
 </html>

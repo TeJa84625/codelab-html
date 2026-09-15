@@ -18,104 +18,11 @@ const DEFAULT_HTML = `<!DOCTYPE html>
 </html>
 `;
 
-const DEFAULT_CSS = `body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    color: #333;
-    padding: 2rem;
-}
+const DEFAULT_CSS = ``;
 
-h1 {
-    color: #007bff;
-}
+const DEFAULT_JS = ``;
 
-/* Example for dark mode */
-.dark body {
-    background-color: #000000ff;
-    color: #e2e8f0;
-}
-
-/* Styling for the JSON output example */
-#output {
-    background-color: #f4f4f4;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-top: 1rem;
-}
-
-.dark #output {
-    background-color: #1a202c;
-    border-color: #4a5568;
-}
-
-#open-editor-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-}
-
-#open-editor-btn:hover {
-    background-color: #0056b3; 
-}
-
-.button-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}`;
-
-const DEFAULT_JS = `console.log("Hello from script.js!");
-
-const h1 = document.querySelector('h1');
-if (h1) {
-    h1.textContent += " ♾️";
-}
-
-fetch('data.json')
-    .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.json();
-    })
-    .then(data => {
-        const output = \`
-            <h2>\${data.title}</h2>
-            <p>\${data.description}</p>
-            <ul>
-                <li><strong>Name:</strong> \${data.user.name}</li>
-                <li><strong>Age:</strong> \${data.user.age}</li>
-                <li><strong>Email:</strong> \${data.user.email}</li>
-            </ul>
-        \`;
-        document.getElementById('output').innerHTML = output;
-    })
-    .catch(error => {
-        document.getElementById('output').innerText = 'Error loading JSON: ' + error;
-    });
-
-    function openEditor() {
-            window.open('https://codelab-html.vercel.app?c=<!-- html -->', '_top');
-        }
-`;
-
-const DEFAULT_ABOUT_HTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Page</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <h1>About This Project</h1>
-    <p>This is a test page to show multi-page navigation.</p>
-    <p><a href="index.html">Go back home</a></p>
-</body>
-</html>`;
+const DEFAULT_ABOUT_HTML = ``;
 
 // --- Application State ---
 let appState = {
@@ -300,8 +207,17 @@ async function fetchProjectData(id) {
  */
 async function handleUrlParameters() {
     try {
+        const hasQuery = window.location.search.length > 0;
         const urlParams = new URLSearchParams(window.location.search);
-        const rawID = urlParams.get('id'); // e.g., "123456_admin" or "123456"
+        let rawID = urlParams.get('id'); // e.g., "123456_admin" or "123456"
+
+        // Fallback: If not found via standard query parameters, search the whole URL for id=...
+        if (!rawID) {
+            const match = window.location.href.match(/[?&/]?id=([^&/]+)/);
+            if (match) {
+                rawID = decodeURIComponent(match[1]);
+            }
+        }
 
         // Initialize your variables
         let projectID = "";
@@ -314,6 +230,7 @@ async function handleUrlParameters() {
             // 2. Extract only the 6-digit code into projectID
             projectID = rawID.split('_admin')[0];
         }
+        
         const previewID = urlParams.get('p');
         // const projectDataString = urlParams.get('data');
         const legacyCodeString = urlParams.get('code') || urlParams.get('c');
@@ -322,7 +239,7 @@ async function handleUrlParameters() {
         let projectLoaded = false; // Flag to skip default setup
 
         if (previewID) {
-            showConfirmModal('Loading Preview...', `Loading preview for project ID: ${previewID}. Please wait.`, null, true,true);
+            showConfirmModal('Loading Preview...', `Loading preview for project ID: ${previewID}. Please wait.`, null, true, true);
 
             try {
                 const projectString = await fetchProjectData(previewID);
@@ -340,7 +257,7 @@ async function handleUrlParameters() {
                         runCode('index.html');
 
                         // 🔥 open in new tab
-                        openNewTab(compiledHtml,false);
+                        openNewTab(compiledHtml, false);
 
                     }, 0);
                     window.history.replaceState({}, document.title, window.location.pathname);
@@ -360,14 +277,12 @@ async function handleUrlParameters() {
                 );
             }
         } else if (projectID) {
-            // --- 1. Load from ?id=... ---
+            // --- 1. Load from id ---
             showConfirmModal('Loading Project...', `Loading project ID: ${projectID}. Please wait.`, null, true);
             try {
-                // Wait for the project data to be fetched
                 const projectString = await fetchProjectData(projectID); 
                 hideActiveModal();
                 
-                // Now load the project from the string
                 const success = loadProjectFromString(projectString); 
                 if (success) {
                     projectLoaded = true; // Mark as loaded
@@ -378,36 +293,28 @@ async function handleUrlParameters() {
                     throw new Error("Failed to parse project data from ID.");
                 }
             } catch (e) {
-                // Handle fetch or parse errors
                 hideActiveModal();
                 console.error("Failed to load from ID:", e);
                 showConfirmModal('Error Loading Project', `Could not load project with ID: ${projectID}. ${e.message}. Loading default project.`, null, true);
-                // Let it fall through to load defaults
             }
         } else if (legacyCodeString) {
-            // --- 3. Fallback: Load from ?c=... (Legacy HTML) ---
+            // --- 3. Fallback: Load from legacy HTML ---
             let formattedCode;
 
             if (legacyCodeString.startsWith('<code>')) {
-                // Format with custom logic: replace <line> with newlines and <tab> with spaces
                 const cleanString = legacyCodeString.substring(6);
                 formattedCode = cleanString
                     .replace(/<line>/g, '\n')
-                    .replace(/<tab>/g, '    '); // Uses 4 spaces for a tab. Use '\t' if you prefer a literal tab.
+                    .replace(/<tab>/g, '    '); 
             } else {
-                // Otherwise, format like normal (newline after every >)
                 formattedCode = legacyCodeString.replace(/>/g, '>\n');
             }
-            appState.files = []; // Clear defaults
+            appState.files = []; 
             const newIndex = createFile('index.html', formattedCode);
-            // createFile('styles.css', '/* CSS */ \n');
-            // createFile('script.js', '// JavaScript \n');
-            // createFile('data.json', '// Json \n');
             appState.activeFileId = newIndex.id;
             projectLoaded = true;
-        }   else if (empty) {
-            // --- 3. Fallback: Load from ?c=... (Legacy HTML) ---
-            appState.files = []; // Clear defaults
+        } else if (empty) {
+            appState.files = []; 
             const newIndex = createFile('index.html', '<!-- Html --> \n');
             createFile('styles.css', '/* CSS */ \n');
             createFile('script.js', '// JavaScript \n');
@@ -416,15 +323,13 @@ async function handleUrlParameters() {
             projectLoaded = true;
         }
 
-        
-
-        // --- 4. No URL params or load failed: Load default project ---
+        // --- 4. No parameters found: Load default project ---
         if (!projectLoaded) {
             setupDefaultFiles();
         }
 
         // Clean the URL bar after loading
-        if (projectID || legacyCodeString) { //projectDataString
+        if (projectID || legacyCodeString) {
             window.history.replaceState({}, document.title, window.location.pathname);
         }
 
@@ -432,7 +337,7 @@ async function handleUrlParameters() {
         console.error("Failed to parse project data from URL:", e);
         showConfirmModal('Error Loading Project', `An error occurred while loading the project: ${e.message}. Loading default project.`, null, true);
         if (appState.files.length === 0) {
-            setupDefaultFiles();
+            setupFileDefaults();
         }
     }
 }
