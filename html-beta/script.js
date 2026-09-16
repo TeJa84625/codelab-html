@@ -1,0 +1,2206 @@
+// --- Default File Content ---
+const DEFAULT_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Codelab</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background: #f4f4f9; }
+        button { background: #4f46e5; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #4338ca; }
+    </style>
+</head>
+<body>
+    <h1>Hello, CodeLab - HTML!</h1>
+    <div class="button-container">
+        <button onclick="window.open(window.location.origin + '/html/?id=999999', '_top')">Open Sample Template</button>
+    </div>
+</body>
+</html>
+`;
+
+const DEFAULT_CSS = ``;
+
+const DEFAULT_JS = ``;
+
+const DEFAULT_ABOUT_HTML = ``;
+
+// --- Application State ---
+let appState = {
+    files: [],
+    activeFileId: null,
+    theme: 'light',
+    editorFont: "'JetBrains Mono', monospace",
+    onConfirm: null, 
+    newTabHandle: null,
+    codeMirrorInstance: null,
+    runMode: 'local',
+    pendingImportFile: null, 
+    leftPanelWidth: '1fr',
+    modalStack: [],
+    _previewBlobUrl: null,
+};
+
+// --- DOM Element References ---
+const dom = {};
+let globalResponseData = null; // For debugging
+let PID = ""; // For debugging
+let PN = "";
+let PC = "";
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKsYTJPFAXkgm4ubhFPtVotpZJ0HpkvytcoLOAeqN8ZNHdtoPcRqXqtc91Gtivr9w3/exec';
+
+/**
+ * Populates the dom object. Called once the DOM is ready.
+ */
+function populateDomRefs() {
+
+// Inside populateDomRefs() in script.js, update the AI elements:
+dom.aiAgentBtn = document.getElementById('ai-agent-btn');
+dom.aiAgentModal = document.getElementById('ai-agent-modal');
+dom.aiPromptInput = document.getElementById('ai-prompt-input');
+dom.aiAgentSubmitBtn = document.getElementById('ai-agent-submit-btn');
+dom.aiChatHistory = document.getElementById('ai-chat-history');
+dom.aiTimer = document.getElementById('ai-timer');
+
+    dom.codeEditor = document.getElementById('code-editor');
+    dom.previewFrame = document.getElementById('preview-frame');
+    dom.mainContainer = document.getElementById('main-container');
+    dom.leftPanel = document.getElementById('left-panel');
+    dom.rightPanel = document.getElementById('right-panel');
+    dom.resizeGutter = document.getElementById('resize-gutter');
+    dom.fileTabsContainer = document.getElementById('file-tabs-container');
+    dom.currentFileName = document.getElementById('current-file-name');
+
+    // Buttons
+    dom.runCodeBtn = document.getElementById('run-code-btn');
+    dom.runNewTabBtn = document.getElementById('run-new-tab-btn');
+    dom.addFileBtn = document.getElementById('add-file-btn');
+    dom.copyFileBtn = document.getElementById('copy-file-btn'); 
+    dom.renameFileBtn = document.getElementById('rename-file-btn');
+    dom.deleteFileBtn = document.getElementById('delete-file-btn');
+    dom.themeToggleBtn = document.getElementById('theme-toggle-btn'); 
+    dom.downloadProjectBtn = document.getElementById('download-project-btn');
+    dom.settingsBtn = document.getElementById('settings-btn'); 
+    dom.developerBtn = document.getElementById('developer-btn');
+    dom.updateNewTabBtn = document.getElementById('update-new-tab-btn');
+    dom.shareBtn = document.getElementById('share-btn'); 
+
+    // Theme Icons
+    dom.themeIconMoon = document.getElementById('theme-icon-moon');
+    dom.themeIconSun = document.getElementById('theme-icon-sun');
+
+    // Modals
+    dom.modalBackdrop = document.getElementById('modal-backdrop');
+    dom.addFileModal = document.getElementById('add-file-modal');
+    dom.renameFileModal = document.getElementById('rename-file-modal');
+    dom.downloadProjectModal = document.getElementById('download-project-modal');
+    dom.confirmModal = document.getElementById('confirm-modal');
+    dom.settingsModal = document.getElementById('settings-modal'); 
+    dom.developerModal = document.getElementById('developer-modal');
+    dom.importRenameModal = document.getElementById('import-rename-modal');
+    dom.confirmTitle = document.getElementById('confirm-title');
+    dom.confirmMessage = document.getElementById('confirm-message');
+
+    // Modal Inputs
+    dom.newFileNameInput = document.getElementById('new-file-name');
+    dom.newFileExtension = document.getElementById('new-file-extension'); 
+    dom.renameFileNameInput = document.getElementById('rename-file-name');
+    dom.renameFileExtension = document.getElementById('rename-file-extension'); 
+    dom.projectFolderNameInput = document.getElementById('project-folder-name');
+    dom.fontSelect = document.getElementById('font-select');
+    
+    // Developer Modal Inputs
+    dom.bulkFileNamesInput = document.getElementById('bulk-file-names-input');
+    dom.importFileBtn = document.getElementById('import-file-btn');
+    dom.importFileInput = document.getElementById('import-file-input');
+
+    // Import Rename Modal Inputs
+    dom.importConflictMessage = document.getElementById('import-conflict-message');
+    dom.importRenameName = document.getElementById('import-rename-name');
+    dom.importRenameExtension = document.getElementById('import-rename-extension');
+
+    // Modal Confirm Buttons
+    dom.createFileConfirmBtn = document.getElementById('create-file-confirm-btn');
+    dom.renameFileConfirmBtn = document.getElementById('rename-file-confirm-btn');
+    dom.downloadProjectConfirmBtn = document.getElementById('download-project-confirm-btn');
+    dom.confirmConfirmBtn = document.getElementById('confirm-confirm-btn');
+    dom.confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+    dom.bulkCreateBtn = document.getElementById('bulk-create-btn');
+    dom.importRenameConfirmBtn = document.getElementById('import-rename-confirm-btn');
+
+    // UI Feedback
+    dom.newTabMessagePanel = document.getElementById('new-tab-message-panel');
+}
+
+/**
+ * NEW: Adds a space to empty <script></script> tags to prevent browser issues.
+ * @param {string} htmlContent The HTML content to process.
+ * @returns {string} The processed HTML.
+ */
+function addSpaceBetweenScriptTags(htmlContent) {
+    // Find <script></script> and replace with <script> <\/script>
+    // This is more specific than the old logic.
+    return htmlContent.replace(/><\/script>/g, '> <\/script>');
+}
+
+// --- Core Application Logic ---
+
+/**
+ * Sets up the default files for a new project.
+ */
+function setupDefaultFiles() {
+    appState.files = []; // Clear any existing
+    const index = createFile('index.html', DEFAULT_HTML);
+    // createFile('styles.css', DEFAULT_CSS);
+    // createFile('script.js', DEFAULT_JS);
+    // createFile('about.html', DEFAULT_ABOUT_HTML);
+    // // Create a default JSON file for the fetch example
+    // createFile('data.json', JSON.stringify({
+    //     title: "Fetched Data",
+    //     description: "This content was loaded from data.json!",
+    //     user: {
+    //         name: "Alex",
+    //         age: 30,
+    //         email: "alex@example.com"
+    //     }
+    // }, null, 2));
+    appState.activeFileId = index.id; // Set index.html as active
+}
+
+/**
+ * *** NEW: Consoldiated fetch function ***
+ * Fetches project data from the Google Script.
+ * @param {string} id The 6-digit project ID.
+ * @returns {Promise<string>} The project data string.
+ */
+async function fetchProjectData(id) {
+    if (!id) {
+        throw new Error("No project ID provided.");
+    }
+    // Uses the global GOOGLE_SCRIPT_URL defined at the top
+    const url = GOOGLE_SCRIPT_URL + '?ID=' + encodeURIComponent(id);
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Network response was not ok (status: ${response.status})`);
+        }
+        const data = await response.json();
+        
+        globalResponseData = data; // For debugging
+        // console.log('Fetched Data:', data);
+
+        updateCodeDisplay("n" + (data.Name?.trim() || "Unknown") + " Project");
+        PC = data.ID;
+        PN = data.Name;
+
+        if (data && data.Data) {
+            return data.Data; // Resolve with the project string
+        } else if (data && (data.status === "error" || !data.Data)) {
+            // Handle cases where ID is not found or data is empty
+            throw new Error(data.message || 'Project ID not found or data is empty.');
+        } else {
+            throw new Error('Invalid data format received from server.');
+        }
+    } catch (error) {
+        // console.error('Error fetching data:', error);
+        // Re-throw so the caller can handle it
+        throw new Error(`Error fetching data from the server: ${error.message}`);
+    }
+}
+
+
+/**
+ * *** UPDATED: Now handles ?id=, ?data=, and ?c= ***
+ * Checks URL for project data and loads it.
+ * This is now robust against race conditions.
+ */
+async function handleUrlParameters() {
+    try {
+        const hasQuery = window.location.search.length > 0;
+        const urlParams = new URLSearchParams(window.location.search);
+        let rawID = urlParams.get('id'); // e.g., "123456_admin" or "123456"
+
+        // Fallback: If not found via standard query parameters, search the whole URL for id=...
+        if (!rawID) {
+            const match = window.location.href.match(/[?&/]?id=([^&/]+)/);
+            if (match) {
+                rawID = decodeURIComponent(match[1]);
+            }
+        }
+
+        // Initialize your variables
+        let projectID = "";
+        let admin_access = false;
+
+        if (rawID) {
+            // 1. Set admin_access to true if the ID contains '_admin'
+            admin_access = rawID.includes('_admin');
+
+            // 2. Extract only the 6-digit code into projectID
+            projectID = rawID.split('_admin')[0];
+        }
+        
+        const previewID = urlParams.get('p');
+        // const projectDataString = urlParams.get('data');
+        const legacyCodeString = urlParams.get('code') || urlParams.get('c');
+        const empty = urlParams.has('empty') || urlParams.has('e');
+
+        let projectLoaded = false; // Flag to skip default setup
+
+        if (previewID) {
+            showConfirmModal('Loading Preview...', `Loading preview for project ID: ${previewID}. Please wait.`, null, true, true);
+
+            try {
+                const projectString = await fetchProjectData(previewID);
+                hideActiveModal();
+
+                const success = loadProjectFromString(projectString);
+
+                if (success) {
+                    projectLoaded = true;
+
+                    setTimeout(() => {
+                        const compiledHtml = compileProjectHtml('index.html');
+
+                        // iframe preview
+                        runCode('index.html');
+
+                        // 🔥 open in new tab
+                        openNewTab(compiledHtml, false);
+
+                    }, 0);
+                    window.history.replaceState({}, document.title, window.location.pathname);
+
+                } else {
+                    throw new Error("Failed to parse project data.");
+                }
+
+            } catch (e) {
+                hideActiveModal();
+                console.error("Failed to preview project:", e);
+                showConfirmModal(
+                    'Error Loading Preview',
+                    `Could not preview project with ID: ${previewID}. ${e.message}. Loading default project.`,
+                    null,
+                    true
+                );
+            }
+        } else if (projectID) {
+            // --- 1. Load from id ---
+            showConfirmModal('Loading Project...', `Loading project ID: ${projectID}. Please wait.`, null, true);
+            try {
+                const projectString = await fetchProjectData(projectID); 
+                hideActiveModal();
+                
+                const success = loadProjectFromString(projectString); 
+                if (success) {
+                    projectLoaded = true; // Mark as loaded
+                    if (admin_access) { 
+                        admin();
+                    }
+                } else {
+                    throw new Error("Failed to parse project data from ID.");
+                }
+            } catch (e) {
+                hideActiveModal();
+                console.error("Failed to load from ID:", e);
+                showConfirmModal('Error Loading Project', `Could not load project with ID: ${projectID}. ${e.message}. Loading default project.`, null, true);
+            }
+        } else if (legacyCodeString) {
+            // --- 3. Fallback: Load from legacy HTML ---
+            let formattedCode;
+
+            if (legacyCodeString.startsWith('<code>')) {
+                const cleanString = legacyCodeString.substring(6);
+                formattedCode = cleanString
+                    .replace(/<line>/g, '\n')
+                    .replace(/<tab>/g, '    '); 
+            } else {
+                formattedCode = legacyCodeString.replace(/>/g, '>\n');
+            }
+            appState.files = []; 
+            const newIndex = createFile('index.html', formattedCode);
+            appState.activeFileId = newIndex.id;
+            projectLoaded = true;
+        } else if (empty) {
+            appState.files = []; 
+            const newIndex = createFile('index.html', '<!-- Html --> \n');
+            createFile('styles.css', '/* CSS */ \n');
+            createFile('script.js', '// JavaScript \n');
+            createFile('data.json', '// Json \n');
+            appState.activeFileId = newIndex.id;
+            projectLoaded = true;
+        }
+
+        // --- 4. No parameters found: Load default project ---
+        if (!projectLoaded) {
+            setupDefaultFiles();
+        }
+
+        // Clean the URL bar after loading
+        if (projectID || legacyCodeString) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+    } catch (e) {
+        console.error("Failed to parse project data from URL:", e);
+        showConfirmModal('Error Loading Project', `An error occurred while loading the project: ${e.message}. Loading default project.`, null, true);
+        if (appState.files.length === 0) {
+            setupFileDefaults();
+        }
+    }
+}
+
+
+/**
+ * Initializes the CodeMirror editor instance.
+ */
+function setupCodeMirror() {
+    if (typeof CodeMirror === 'undefined') {
+        console.error("CodeMirror is not loaded. Cannot initialize editor.");
+        return;
+    }
+    appState.codeMirrorInstance = CodeMirror.fromTextArea(dom.codeEditor, {
+        lineNumbers: true,
+        mode: 'htmlmixed',
+        theme: 'default',
+        lineWrapping: true,
+        autoCloseTags: true,
+        autoCloseBrackets: true,
+        extraKeys: {
+            "Cmd-Enter": handleShortcutRun,
+            "Cmd-S": handleShortcutRun,
+            "Cmd-B": showsettings,
+            "Ctrl-Enter": handleShortcutRun,
+            "Ctrl-S": handleShortcutRun,
+            "Ctrl-B": showsettings,
+            "Cmd-/": "toggleComment",
+            "Ctrl-/": "toggleComment"
+        }
+    });
+
+    const debouncedSaveCurrentFile = debounce(saveCurrentFile, 250);
+    appState.codeMirrorInstance.on('change', debouncedSaveCurrentFile);
+}
+
+function showsettings() {
+    showModal(dom.settingsModal);
+}
+
+/**
+ * Renders the file tabs based on the current appState.
+ */
+function renderFileTabs() {
+    dom.fileTabsContainer.innerHTML = '';
+    appState.files.forEach(file => {
+        const isActive = file.id === appState.activeFileId;
+        const tab = document.createElement('button');
+        tab.type = 'button';
+        tab.className = `px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 dark-mode-transition ${isActive
+                ? 'bg-white dark:bg-gray-900 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
+                : 'bg-gray-100 dark:bg-gray-800 border-transparent hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
+            }`;
+        tab.textContent = file.name;
+        tab.dataset.fileId = file.id;
+        tab.addEventListener('click', () => switchFile(file.id));
+        dom.fileTabsContainer.appendChild(tab);
+    });
+}
+
+/**
+ * Loads the content of a specific file into the code editor.
+ * @param {string} fileId - The ID of the file to load.
+ */
+function loadFileIntoEditor(fileId) {
+    const file = appState.files.find(f => f.id === fileId);
+    if (!file) return;
+
+    appState.activeFileId = fileId;
+    
+    if (appState.codeMirrorInstance) {
+        appState.codeMirrorInstance.setValue(file.content);
+        
+        let mode = 'xml'; // default
+        if (file.lang === 'css') mode = 'css';
+        else if (file.lang === 'javascript') mode = 'javascript';
+        else if (file.lang === 'html') mode = 'htmlmixed';
+        else if (file.lang === 'json') mode = { name: "javascript", json: true }; 
+        
+        appState.codeMirrorInstance.setOption('mode', mode);
+    }
+    
+    dom.currentFileName.textContent = file.name;
+    renderFileTabs();
+
+    const isLastFile = appState.files.length <= 1;
+    const isIndexHtml = file.name.toLowerCase() === 'index.html';
+    
+    const canDelete = !isLastFile && !isIndexHtml;
+    dom.deleteFileBtn.disabled = !canDelete;
+    dom.deleteFileBtn.classList.toggle('opacity-50', !canDelete);
+    dom.deleteFileBtn.classList.toggle('cursor-not-allowed', !canDelete);
+
+    const canRename = !isIndexHtml;
+    dom.renameFileBtn.disabled = !canRename;
+    dom.renameFileBtn.classList.toggle('opacity-50', !canRename);
+    dom.renameFileBtn.classList.toggle('cursor-not-allowed', !canRename);
+    
+    dom.copyFileBtn.disabled = false;
+    dom.copyFileBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+}
+
+/**
+ * Saves the current editor content back to the appState.
+ */
+function saveCurrentFile() {
+    const file = appState.files.find(f => f.id === appState.activeFileId);
+    if (file && appState.codeMirrorInstance) {
+        let content = appState.codeMirrorInstance.getValue();
+        if (file.lang === 'html') {
+            content = addSpaceBetweenScriptTags(content);
+        }
+        file.content = content;
+    }
+}
+
+/**
+ * Intelligently updates or creates a file, blocks accidental HTML leaks into CSS, 
+ * and logs the action to the console.
+ */
+function updateFile(fileName, data, changedFilesArray = []) {
+    if (!fileName || !data) return;
+    
+    let cleanContent = data.trim() + '\n';
+    
+    // SAFETY CHECK: Prevent HTML text from accidentally leaking into CSS files (Fixes MIME type error)
+    if (fileName.toLowerCase().endsWith('.css')) {
+        if (cleanContent.includes('<!DOCTYPE') || cleanContent.includes('<html') || cleanContent.includes('</html>')) {
+            console.warn(`[CodeLab AI] ⚠️ Blocked HTML content from being written to CSS file: ${fileName}`);
+            return; // Skip writing broken content to CSS
+        }
+    }
+
+    // If it's an HTML file, run the safety function for script tags
+    if (fileName.toLowerCase().endsWith('.html')) {
+        cleanContent = addSpaceBetweenScriptTags(cleanContent);
+    }
+
+    let existingFile = appState.files.find(f => f.name.toLowerCase() === fileName.toLowerCase());
+
+    if (existingFile) {
+        existingFile.content = cleanContent;
+        console.log(`[CodeLab AI] ✅ Updated existing file: ${existingFile.name}`);
+        if (!changedFilesArray.includes(existingFile.name)) {
+            changedFilesArray.push(existingFile.name);
+        }
+    } else {
+        createFile(fileName, cleanContent);
+        console.log(`[CodeLab AI] ✨ Created new file: ${fileName}`);
+        if (!changedFilesArray.includes(fileName)) {
+            changedFilesArray.push(fileName);
+        }
+    }
+}
+
+/**
+ * Smart Parser: Scans AI text for strict markers, markdown blocks, or raw code,
+ * ensuring index.html is never left behind.
+ */
+function extractFilesFromResponse(response) {
+    let changedFiles = [];
+    
+    // STRATEGY A: Strict Formatting (✴️start:file.ext: ... ✴️end)
+    const strictRegex = /✴️start:\s*(.*?)\s*:([\s\S]*?)✴️end/g;
+    let strictMatch;
+    let strictClean = response.replace(/```[a-z]*\n/gi, '').replace(/```/g, '');
+    
+    while ((strictMatch = strictRegex.exec(strictClean)) !== null) {
+        updateFile(strictMatch[1].trim(), strictMatch[2], changedFiles);
+    }
+
+    if (changedFiles.length > 0) return changedFiles;
+
+    // STRATEGY B: Markdown Parsing (```html ... ```)
+    const blockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+    let blockMatch;
+    let htmlCount = 0, cssCount = 0, jsCount = 0;
+    let lastIndex = 0;
+
+    while ((blockMatch = blockRegex.exec(response)) !== null) {
+        let lang = (blockMatch[1] || '').toLowerCase();
+        let content = blockMatch[2];
+        let fileName = null;
+
+        // Context check (e.g., "**style.css**")
+        const textBefore = response.substring(lastIndex, blockMatch.index);
+        const nameMatch = textBefore.slice(-150).match(/(?:[\*\`\s])([a-zA-Z0-9_-]+\.(?:html|css|js|json))(?:[\*\`\s:]|$)/i);
+        if (nameMatch && nameMatch[1]) fileName = nameMatch[1];
+
+        // Comment check (e.g., /* style.css */)
+        if (!fileName) {
+            const firstLine = content.split('\n')[0].trim();
+            const commentMatch = firstLine.match(/(?:<!--|\/\*|\/\/)\s*([a-zA-Z0-9_-]+\.[a-z0-9]+)\s*(?:-->|\*\/)?/i);
+            if (commentMatch && commentMatch[1]) fileName = commentMatch[1];
+        }
+
+        // Auto-assign based on language
+        if (!fileName) {
+            if (lang === 'html') {
+                fileName = htmlCount === 0 ? 'index.html' : `page${htmlCount}.html`;
+                htmlCount++;
+            } else if (lang === 'css') {
+                fileName = cssCount === 0 ? 'style.css' : `style${cssCount}.css`;
+                cssCount++;
+            } else if (lang === 'js' || lang === 'javascript') {
+                fileName = jsCount === 0 ? 'script.js' : `script${jsCount}.js`;
+                jsCount++;
+            } else {
+                fileName = `code.${lang || 'txt'}`;
+            }
+        }
+
+        updateFile(fileName, content, changedFiles);
+        lastIndex = blockRegex.lastIndex;
+    }
+
+    if (changedFiles.length > 0) return changedFiles;
+
+    // STRATEGY C & D: Fallbacks for unformatted responses
+    console.warn("[CodeLab AI] Standard parsing found no files. Applying deep fallback extraction...");
+    
+    // Check for HTML document structure and force-update index.html
+    const htmlMatch = response.match(/(<!DOCTYPE html>[\s\S]*?<\/html>)/i) || 
+                      response.match(/(<html[\s\S]*?<\/html>)/i);
+    if (htmlMatch) {
+        updateFile('index.html', htmlMatch[1], changedFiles);
+    }
+
+    // Check for CSS rules block
+    const cssBlocks = response.match(/([a-zA-Z0-9\.\#\-\_\:\,\s]+\s*\{[\s\S]*?\})/g);
+    if (cssBlocks && cssBlocks.length > 2 && !response.includes('```css')) {
+        let combinedCSS = cssBlocks.join('\n');
+        updateFile('style.css', combinedCSS, changedFiles);
+    }
+
+    return changedFiles;
+}
+
+/**
+ * Smart Parser: Scans AI text for strict markers, markdown blocks, or raw code.
+ */
+function extractFilesFromResponse(response) {
+    let changedFiles = [];
+    
+    // STRATEGY A: Strict Formatting (✴️start:file.ext: ... ✴️end)
+    const strictRegex = /✴️start:\s*(.*?)\s*:([\s\S]*?)✴️end/g;
+    let strictMatch;
+    let strictClean = response.replace(/```[a-z]*\n/gi, '').replace(/```/g, '');
+    
+    while ((strictMatch = strictRegex.exec(strictClean)) !== null) {
+        updateFile(strictMatch[1].trim(), strictMatch[2], changedFiles);
+    }
+
+    if (changedFiles.length > 0) return changedFiles;
+
+    // STRATEGY B: Markdown Parsing (```html ... ```)
+    const blockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+    let blockMatch;
+    let htmlCount = 0, cssCount = 0, jsCount = 0;
+    let lastIndex = 0;
+
+    while ((blockMatch = blockRegex.exec(response)) !== null) {
+        let lang = (blockMatch[1] || '').toLowerCase();
+        let content = blockMatch[2];
+        let fileName = null;
+
+        // Context check (e.g., "**style.css**")
+        const textBefore = response.substring(lastIndex, blockMatch.index);
+        const nameMatch = textBefore.slice(-150).match(/(?:[\*\`\s])([a-zA-Z0-9_-]+\.(?:html|css|js|json))(?:[\*\`\s:]|$)/i);
+        if (nameMatch && nameMatch[1]) fileName = nameMatch[1];
+
+        // Comment check (e.g., /* style.css */)
+        if (!fileName) {
+            const firstLine = content.split('\n')[0].trim();
+            const commentMatch = firstLine.match(/(?:<!--|\/\*|\/\/)\s*([a-zA-Z0-9_-]+\.[a-z0-9]+)\s*(?:-->|\*\/)?/i);
+            if (commentMatch && commentMatch[1]) fileName = commentMatch[1];
+        }
+
+        // Auto-assign
+        if (!fileName) {
+            if (lang === 'html') {
+                fileName = htmlCount === 0 ? 'index.html' : `page${htmlCount}.html`;
+                htmlCount++;
+            } else if (lang === 'css') {
+                fileName = cssCount === 0 ? 'style.css' : `style${cssCount}.css`;
+                cssCount++;
+            } else if (lang === 'js' || lang === 'javascript') {
+                fileName = jsCount === 0 ? 'script.js' : `script${jsCount}.js`;
+                jsCount++;
+            } else {
+                fileName = `code.${lang || 'txt'}`;
+            }
+        }
+
+        updateFile(fileName, content, changedFiles);
+        lastIndex = blockRegex.lastIndex;
+    }
+
+    if (changedFiles.length > 0) return changedFiles;
+
+    // STRATEGY C: Raw Code Fallback (Catches AI responses with NO markdown formatting)
+    console.warn("[CodeLab AI] Markdown missing. Attempting raw code extraction...");
+    
+    // 1. Find raw HTML by looking for typical HTML document structures
+    const htmlMatch = response.match(/(<!DOCTYPE html>[\s\S]*?<\/html>)/i) || 
+                      response.match(/(<html[\s\S]*?<\/html>)/i);
+    if (htmlMatch) {
+        updateFile('index.html', htmlMatch[1], changedFiles);
+    }
+
+    // 2. Find raw CSS (Look for common CSS rule structures if 'css' text precedes it)
+    // This looks for a block starting with 'css' followed by CSS rules like `body { ... }`
+    const cssFallbackMatch = response.match(/css\s*(?:\/\*[\s\S]*?\*\/)?\s*([a-zA-Z0-9\.\#\-\_\:\,\s]+\s*\{[\s\S]*?\})/i);
+    if (cssFallbackMatch && !response.includes('```css')) {
+        // Extract everything from the first CSS rule to the end of the text (or before next obvious non-CSS block)
+        const possibleCSS = response.substring(response.indexOf(cssFallbackMatch[1]));
+        // Just grab it if it has braces and semicolons
+        if (possibleCSS.includes('{') && possibleCSS.includes(';')) {
+            updateFile('style.css', possibleCSS, changedFiles);
+        }
+    }
+
+    return changedFiles;
+}
+
+/**
+ * Switches the active file being edited.
+ * @param {string} newFileId - The ID of the file to switch to.
+ */
+function switchFile(newFileId) {
+    if (newFileId === appState.activeFileId) return;
+    saveCurrentFile();
+    loadFileIntoEditor(newFileId);
+}
+
+/**
+ * Compiles all project files into a single HTML string for preview.
+ * @returns {string} The compiled HTML string.
+ */
+function compileProjectHtml(entryHtmlFileName = 'index.html') {
+    let entryFile = appState.files.find(f => f.name.toLowerCase() === entryHtmlFileName.toLowerCase() && f.lang === 'html');
+    if (!entryFile) {
+        entryFile = appState.files.find(f => f.lang === 'html');
+    }
+    if (!entryFile) {
+        return '<h1 style="color: red; font-family: sans-serif;">Error: No HTML file found.</h1>';
+    }
+
+    let finalHtml = entryFile.content;
+    const allHtmlFiles = appState.files.filter(f => f.lang === 'html');
+    const cssFiles = appState.files.filter(f => f.name.endsWith('.css'));
+    const jsFiles = appState.files.filter(f => f.name.endsWith('.js'));
+    const jsonFiles = appState.files.filter(f => f.lang === 'json'); 
+
+    // --- 1. Inject Theme Class ---
+    const themeClass = appState.theme; 
+    finalHtml = finalHtml.replace(/<html([^>]*)>/i, (match, existingAttributes) => {
+        let newAttributes = existingAttributes || '';
+        newAttributes = newAttributes.replace(/class="[^"]*"/i, '');
+        return `<html class="${themeClass}" ${newAttributes.trim()}>`;
+    });
+
+    // --- 2. Inject CSS ---
+    let cssInject = '';
+    for (const file of cssFiles) {
+        const reg = new RegExp(`<link[^>]*href=["']${escapeRegExp(file.name)}["'][^>]*>`);
+        if (finalHtml.match(reg)) {
+            finalHtml = finalHtml.replace(reg, `<style data-filename="${file.name}">\n${file.content}\n</style>`);
+        } else {
+            cssInject += `<style data-filename="${file.name}">\n${file.content}\n</style>\n`;
+        }
+    }
+
+    // --- 3. [NEW] Create JSON store and fetch interceptor ---
+    let fetchInterceptorScript = '';
+    if (jsonFiles.length > 0) {
+        const jsonStore = {};
+        for (const file of jsonFiles) {
+            // Store the raw text content
+            jsonStore[file.name] = file.content;
+        }
+
+        // Create a script to intercept fetch() calls
+        fetchInterceptorScript = `
+<script data-filename="fetch-interceptor">
+    (function() {
+        const jsonFileStore = ${JSON.stringify(jsonStore)};
+        const originalFetch = window.fetch;
+
+        window.fetch = function(resource, options) {
+            let requestURL = resource;
+            if (resource instanceof Request) {
+                requestURL = resource.url;
+            }
+
+            // Clean up the URL to just the filename (basic implementation)
+            const urlParts = requestURL.split('/');
+            const fileName = urlParts[urlParts.length - 1];
+
+            if (jsonFileStore.hasOwnProperty(fileName)) {
+                // console.log('CodeLab: Intercepting fetch for "' + fileName + '"');
+                
+                // Return a Promise that resolves with a fake Response
+                return new Promise((resolve, reject) => {
+                    try {
+                        // Validate JSON syntax before creating response
+                        JSON.parse(jsonFileStore[fileName]);
+                        
+                        const responseBody = new Blob([jsonFileStore[fileName]], { type: 'application/json' });
+                        const response = new Response(responseBody, {
+                            status: 200,
+                            statusText: 'OK',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        
+                        resolve(response);
+
+                    } catch (e) {
+                        // console.error('CodeLab: Invalid JSON in ' + fileName + ':', e);
+                        reject(new TypeError('Failed to parse JSON: ' + e.message));
+                    }
+                });
+            }
+
+            // Not a local JSON file, use the real fetch
+            return originalFetch.apply(this, arguments);
+        };
+    })();
+<\/script>
+`;
+    }
+    
+    // Inject CSS and Fetch Interceptor into the head
+    finalHtml = finalHtml.replace(/<\/head>/i, `${cssInject}\n${fetchInterceptorScript}\n</head>`);
+
+
+    // --- 4. Inject JS ---
+    let jsInject = '';
+    for (const file of jsFiles) {
+        const reg = new RegExp(`<script[^>]*src=["']${escapeRegExp(file.name)}["'][^>]*><\/script>`);
+        if (finalHtml.match(reg)) {
+            finalHtml = finalHtml.replace(reg, `<script data-filename="${file.name}">\n${file.content}\n<\/script>`);
+        } else {
+            jsInject += `<script data-filename="${file.name}">\n${file.content}\n</script>\n`;
+        }
+    }
+
+    // --- 5. Multi-page Navigation Logic ---
+    let newBodyContent = '';
+    for (const file of allHtmlFiles) {
+        const bodyMatch = file.content.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        const pageBody = bodyMatch ? bodyMatch[1] : ``;
+        newBodyContent += `<div data-page="${file.name}" class="codelab-page" style="display: none;">${pageBody}</div>\n`;
+    }
+    
+    const originalBodyMatch = finalHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+    if (originalBodyMatch) {
+        finalHtml = finalHtml.replace(originalBodyMatch[0], `<body>\n${newBodyContent}\n</body>`);
+    } else {
+        finalHtml += `<body>\n${newBodyContent}\n</body>`;
+    }
+
+    // --- 6. Inject Navigation Script & Remaining JS ---
+    const navigationScript = `
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const showCodelabPage = (pageName) => {
+                const targetPage = pageName.split('/').pop();
+                
+                let found = false;
+                document.querySelectorAll('.codelab-page').forEach(page => {
+                    if (page.dataset.page.toLowerCase() === targetPage.toLowerCase()) {
+                        page.style.display = 'block';
+                        found = true;
+                    } else {
+                        page.style.display = 'none';
+                    }
+                });
+                
+                if (found) {
+                    sessionStorage.setItem('codelabActivePage', targetPage);
+                } else {
+                    console.warn(\`CodeLab Navigation: Page "\${targetPage}" not found.\`);
+                    const firstPage = document.querySelector('.codelab-page');
+                    if(firstPage) {
+                        firstPage.style.display = 'block';
+                        sessionStorage.setItem('codelabActivePage', firstPage.dataset.page);
+                    }
+                }
+            };
+
+            const savedPage = sessionStorage.getItem('codelabActivePage');
+            const initialPage = savedPage || '${entryFile.name.toLowerCase()}' || 'index.html';
+            showCodelabPage(initialPage);
+
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a');
+                if (!link) return;
+
+                const href = link.getAttribute('href');
+                if (href) {
+                    const isLocalHtml = !href.startsWith('#') && 
+                                        !href.startsWith('http') && 
+                                        !href.startsWith('mailto:') &&
+                                        href.endsWith('.html');
+                                        
+                    if (isLocalHtml) {
+                        e.preventDefault(); 
+                        showCodelabPage(href);
+                    }
+                }
+            });
+        });
+    <\/script>
+    `;
+    
+    finalHtml = finalHtml.replace(/<\/body>/i, `${jsInject}\n${navigationScript}\n</body>`);
+
+    return finalHtml;
+}
+
+
+/**
+ * Compiles the project files and runs the code in the preview iframe.
+ */
+function runCode(entryHtmlFileName = 'index.html') {
+    saveCurrentFile(); 
+    const compiledHtml = compileProjectHtml(entryHtmlFileName);
+
+    if (appState._previewBlobUrl) {
+        URL.revokeObjectURL(appState._previewBlobUrl);
+    }
+    const blob = new Blob([compiledHtml], { type: 'text/html; charset=utf-8' });
+    appState._previewBlobUrl = URL.createObjectURL(blob);
+    
+    dom.previewFrame.src = appState._previewBlobUrl;
+
+    try {
+        if (appState.newTabHandle && !appState.newTabHandle.closed) {
+            appState.newTabHandle.location.href = appState._previewBlobUrl;
+        } else if (appState.newTabHandle && appState.newTabHandle.closed) {
+            appState.newTabHandle = null; 
+        }
+    } catch (e) {
+        appState.newTabHandle = null; 
+    }
+}
+
+/**
+ * Click handler for the "Run" button.
+ */
+function handleRunClick() {
+    appState.runMode = 'local';
+    updateRunModeUI();
+    runCode('index.html');
+}
+
+/**
+ * Opens the compiled code in a new tab.
+ */
+function openNewTab(finalHtml, openInNewTab = true) {
+    try {
+        if (openInNewTab) {
+            const blob = new Blob([finalHtml], { type: 'text/html; charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            appState.newTabHandle = window.open(url, '_blank');
+        } else {
+            // Clear layout for full-page look inside the same tab
+            document.open();
+            
+            // Generate the project blob
+            const blob = new Blob([finalHtml], { type: 'text/html; charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            // Inject an iframe with a completely maxed-out Permissions Policy ('allow' attribute)
+            document.write(`
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${document.title}</title>
+                    <style>
+                        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+                        iframe { width: 100%; height: 100%; border: none; display: block; }
+                    </style>
+                </head>
+                <body>
+                    <iframe src="${url}" 
+                        allow="camera; microphone; geolocation; display-capture; clipboard-read; clipboard-write; gamepad; accelerometer; gyroscope; magnetometer">
+                    </iframe>
+                </body>
+                </html>
+            `);
+            document.close();
+
+            // Seamlessly adjust the address bar text using your global PC variable
+            if (typeof PC !== 'undefined' && PC) {
+                const newUrl = window.location.pathname + '?p=' + encodeURIComponent(PC);
+                window.history.replaceState({}, document.title, newUrl);
+            }
+        }
+
+    } catch (e) {
+        console.error("Error opening/loading HTML:", e);
+        appState.newTabHandle = null;
+    }
+}
+
+/**
+ * Click handler for the "Run in New Tab" button.
+ */
+function handleRunInNewTab() {
+    saveCurrentFile(); 
+
+    const finalHtml = compileProjectHtml(); 
+    if (finalHtml.startsWith('<h1 style="color: red')) {
+        console.error("Cannot open in new tab: No index.html file found.");
+        return;
+    }
+
+    openNewTab(finalHtml);
+    appState.runMode = 'newTab';
+    updateRunModeUI();
+}
+
+/**
+ * Handles the Ctrl+Enter / Cmd+Enter shortcut.
+ */
+function handleShortcutRun() {
+    runCode();
+}
+
+/**
+ * Updates the UI elements based on the current run mode.
+ */
+function updateRunModeUI() {
+    if (appState.runMode === 'newTab') {
+        dom.runCodeBtn.classList.remove('hidden');
+        dom.runNewTabBtn.classList.add('hidden');
+        dom.runCodeBtn.classList.remove('ring-2', 'ring-offset-2', 'ring-blue-400', 'dark:ring-blue-500');
+
+        dom.mainContainer.style.gridTemplateColumns = `1fr auto 200px`; 
+        dom.previewFrame.classList.add('hidden');
+        dom.newTabMessagePanel.classList.remove('hidden');
+    } else { // 'local'
+        dom.runCodeBtn.classList.remove('hidden');
+        dom.runNewTabBtn.classList.remove('hidden');
+
+        dom.runCodeBtn.classList.add('ring-2', 'ring-offset-2', 'ring-blue-400', 'dark:ring-blue-500');
+        dom.runNewTabBtn.classList.remove('ring-2', 'ring-offset-2', 'ring-gray-400', 'dark:ring-gray-500');
+        
+        dom.mainContainer.style.gridTemplateColumns = `${appState.leftPanelWidth} auto 1fr`; 
+        dom.previewFrame.classList.remove('hidden');
+        dom.newTabMessagePanel.classList.add('hidden');
+    }
+}
+
+
+/**
+ * Sets the color theme (light/dark).
+ */
+function setTheme(theme) {
+    appState.theme = theme;
+    localStorage.setItem('codelab-theme', theme);
+    if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        dom.themeIconMoon.classList.add('hidden');
+        dom.themeIconSun.classList.remove('hidden');
+        appState.codeMirrorInstance?.setOption('theme', 'material-darker'); 
+    } else {
+        document.documentElement.classList.remove('dark');
+        dom.themeIconMoon.classList.remove('hidden');
+        dom.themeIconSun.classList.add('hidden');
+        appState.codeMirrorInstance?.setOption('theme', 'default'); 
+    }
+}
+
+/**
+ * Toggles the current color theme.
+ */
+function toggleTheme() {
+    const newTheme = appState.theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    runCode(); 
+}
+
+/**
+ * Sets the editor font.
+ */
+function setEditorFont(fontFamily) {
+    appState.editorFont = fontFamily;
+    localStorage.setItem('codelab-font', fontFamily);
+    dom.fontSelect.value = fontFamily;
+    
+    if (appState.codeMirrorInstance) {
+        const cmElement = appState.codeMirrorInstance.getWrapperElement();
+        cmElement.style.fontFamily = fontFamily;
+        appState.codeMirrorInstance.refresh(); 
+    }
+}
+
+
+// --- Modal Handling ---
+
+/**
+ * Shows a custom confirmation modal.
+ */
+function showConfirmModal(title, message, onConfirmCallback, isInfoModal = false ,loading = false) {
+    dom.confirmTitle.textContent = title;
+    dom.confirmMessage.textContent = message;
+
+    const loadingBar = document.getElementById("confirm-loading-bar");
+    const confirmButton = document.getElementById("confirm-confirm-btn");
+
+    if (title === "Loading Project..." || title === "Share Code Files" || loading === true) {
+        loadingBar.classList.remove('hidden');
+        confirmButton.classList.add('hidden');
+    } else {
+        loadingBar.classList.add('hidden');
+        confirmButton.classList.remove('hidden');
+    }
+
+    if (isInfoModal) {
+        dom.confirmCancelBtn.classList.add('hidden');
+        dom.confirmConfirmBtn.textContent = 'OK';
+        dom.confirmConfirmBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        dom.confirmConfirmBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        appState.onConfirm = null; 
+    } else {
+        dom.confirmCancelBtn.classList.remove('hidden');
+        dom.confirmConfirmBtn.textContent = 'Confirm';
+        dom.confirmConfirmBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        dom.confirmConfirmBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+        appState.onConfirm = onConfirmCallback;
+    }
+
+    showModal(dom.confirmModal);
+}
+
+/**
+ * Manages a stack of modals
+ */
+function showModal(modalElement) {
+    appState.modalStack.push(modalElement);
+    dom.modalBackdrop.classList.remove('hidden');
+    modalElement.classList.remove('hidden');
+}
+
+/**
+ * Hides the top-most modal from the stack
+ */
+function hideActiveModal() {
+    const modalToHide = appState.modalStack.pop();
+    
+    if (modalToHide) {
+        modalToHide.classList.add('hidden');
+    }
+    
+    if (appState.modalStack.length === 0) {
+        dom.modalBackdrop.classList.add('hidden');
+    }
+    
+    appState.onConfirm = null; 
+    appState.pendingImportFile = null; 
+}
+
+// --- Event Handlers ---
+
+/**
+ * Reusable function to create a file in appState.
+ */
+function createFile(name, initialContent = null) {
+    let lang = 'html';
+    let content = initialContent;
+
+    if (name.endsWith('.css')) lang = 'css';
+    else if (name.endsWith('.js')) lang = 'javascript';
+    else if (name.endsWith('.json')) lang = 'json'; 
+    
+    if (content === null) {
+        if (lang === 'css') content = '/* New CSS File */';
+        else if (lang === 'javascript') content = '// New JavaScript File';
+        else if (lang === 'json') content = '{\n    "key": "value"\n}'; 
+        else content = '';
+    }
+
+    const newFile = {
+        id: crypto.randomUUID(), 
+        name,
+        lang,
+        content,
+    };
+
+    appState.files.push(newFile);
+    return newFile;
+}
+
+/**
+ * Validates a file name.
+ */
+function validateFileName(baseName, extension, fileIdToIgnore = null) {
+    const trimmedBase = baseName.trim().replace(/\./g, '');
+    
+    if (!trimmedBase) {
+        return { isValid: false, error: 'File name cannot be empty.', fullName: null };
+    }
+
+    const fullName = trimmedBase + extension;
+    
+    const duplicate = appState.files.find(f => 
+        f.name.toLowerCase() === fullName.toLowerCase() && 
+        f.id !== fileIdToIgnore
+    );
+
+    if (duplicate) {
+        return { isValid: false, error: `A file named "${fullName}" already exists.`, fullName: null };
+    }
+
+    return { isValid: true, error: null, fullName: fullName };
+}
+
+
+function handleAddNewFile() {
+    dom.newFileNameInput.value = '';
+    dom.newFileExtension.value = '.html';
+    showModal(dom.addFileModal);
+    dom.newFileNameInput.focus();
+}
+
+function handleCreateFileConfirm() {
+    const validation = validateFileName(dom.newFileNameInput.value, dom.newFileExtension.value);
+        
+    if (!validation.isValid) {
+        showConfirmModal('Invalid Name', validation.error, null, true);
+        return;
+    }
+
+    const newFile = createFile(validation.fullName);
+    hideActiveModal(); 
+    renderFileTabs();
+    switchFile(newFile.id);
+}
+
+/**
+ * Handles the "Copy File" button click
+ */
+function handleCopyFile() {
+    if (dom.copyFileBtn.disabled) return;
+    const fileToCopy = appState.files.find(f => f.id === appState.activeFileId);
+    if (!fileToCopy) return;
+
+    navigator.clipboard.writeText(fileToCopy.content)
+        .then(() => {
+            showConfirmModal('Copied!', `Content of "${fileToCopy.name}" copied to clipboard.`, null, true);
+        })
+        .catch(err => {
+            console.error('Failed to copy text: ', err);
+            showConfirmModal('Error', 'Could not copy content to clipboard. See console for details.', null, true);
+        });
+}
+
+
+function handleRenameFile() {
+    if (dom.renameFileBtn.disabled) return;
+    const file = appState.files.find(f => f.id === appState.activeFileId);
+    if (!file) return;
+
+    const [baseName, extension] = splitFileName(file.name);
+    
+    dom.renameFileNameInput.value = baseName;
+    dom.renameFileExtension.value = extension;
+    showModal(dom.renameFileModal);
+    dom.renameFileNameInput.focus();
+}
+
+function handleRenameFileConfirm() {
+    const file = appState.files.find(f => f.id === appState.activeFileId);
+    if (!file) return;
+    
+    const extension = dom.renameFileExtension.value;
+    const validation = validateFileName(dom.renameFileNameInput.value, extension, file.id);
+
+    if (!validation.isValid) {
+        showConfirmModal('Invalid Name', validation.error, null, true);
+        return;
+    }
+
+    file.name = validation.fullName;
+    
+    if (extension === '.css') file.lang = 'css';
+    else if (extension === '.js') file.lang = 'javascript';
+    else if (extension === '.html') file.lang = 'html';
+    else if (extension === '.json') file.lang = 'json'; 
+
+    hideActiveModal();
+    renderFileTabs();
+    dom.currentFileName.textContent = validation.fullName;
+    loadFileIntoEditor(file.id);
+}
+
+function handleDeleteFile() {
+    if (dom.deleteFileBtn.disabled) return;
+    const fileToDelete = appState.files.find(f => f.id === appState.activeFileId);
+    if (!fileToDelete) return;
+
+    if (fileToDelete.name.toLowerCase() === 'index.html') {
+        showConfirmModal( 'Action Not Allowed', 'The "index.html" file is essential and cannot be deleted.', null, true);
+        return;
+    }
+
+    showConfirmModal(
+        'Delete File',
+        `Are you sure you want to delete "${fileToDelete.name}"? This action cannot be undone.`,
+        () => {
+            const fileIdToDelete = appState.activeFileId;
+            appState.files = appState.files.filter(f => f.id !== fileIdToDelete);
+            let newActiveFileId = appState.files.find(f => f.name === 'index.html')?.id;
+            if (!newActiveFileId) {
+                newActiveFileId = appState.files[0]?.id || null;
+            }
+            if (newActiveFileId) {
+                loadFileIntoEditor(newActiveFileId);
+            } else {
+                console.error("All files were deleted. This should not happen.");
+                setupDefaultFiles(); 
+                loadFileIntoEditor(appState.activeFileId);
+            }
+            renderFileTabs();
+        }
+    );
+}
+
+function admin() {
+    console.log("--- Current Variable Values ---");
+    console.log("PID:", PID);
+    console.log("PN :", PN);
+    console.log("PC :", PC);
+
+    const shareBtn = document.getElementById('share-btn');
+    if (shareBtn) {
+        shareBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i>`; // Update icon
+        shareBtn.title = "Update Project";
+    }
+    updateCodeDisplay("c" + PC);
+
+    console.log("--- Updated Variable Values ---");
+    console.log("PID:", PID);
+    console.log("PN :", PN);
+    console.log("PC :", PC);
+}
+
+function handleDownloadProject() {
+    dom.projectFolderNameInput.value = (PID.startsWith("n") && PID.length > 1) ? PID.substring(1) : 'my-codelab-project';
+    showModal(dom.downloadProjectModal);
+}
+
+function handleDownloadProjectConfirm() {
+    saveCurrentFile(); 
+
+    const folderName = dom.projectFolderNameInput.value.trim() || 'codelab-project';
+    const zip = new JSZip();
+    const folder = zip.folder(folderName);
+
+    appState.files.forEach(file => {
+        folder.file(file.name, file.content);
+    });
+
+    zip.generateAsync({ type: 'blob' })
+        .then(blob => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${folderName}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+            hideActiveModal();
+        })
+        .catch(err => {
+            console.error("Failed to create zip file:", err);
+            showConfirmModal('Error', 'Failed to create zip file. See console for details.', null, true);
+        });
+}
+
+// --- Google Script API Helpers ---
+
+/**
+ * Parses a project string in the ✴️start...✴️end format,
+ * clears the current project, and loads the new one.
+ * @param {string} projectString The string data to import.
+ * @returns {boolean} True if parsing was successful, false otherwise.
+ */
+function loadProjectFromString(projectString) {
+    if (!projectString || typeof projectString !== 'string') {
+        return false;
+    }
+    
+    const fileRegex = /✴️start:(.*?):([\s\S]*?)✴️end/g;
+    let match;
+    let loadedFiles = [];
+
+    // First, parse all files from the string
+    while ((match = fileRegex.exec(projectString)) !== null) {
+        const fileName = match[1];
+        const content = match[2];
+        if (fileName) {
+            loadedFiles.push({ name: fileName, content: content });
+        }
+    }
+
+    // If no valid files were found, abort
+    if (loadedFiles.length === 0) {
+        return false;
+    }
+
+    // --- SUCESS: Clear old state and load new files ---
+    appState.files = [];
+    let firstFileId = null;
+
+    for (const file of loadedFiles) {
+        // Use addSpaceBetweenScriptTags for HTML files on import
+        let fileContent = file.content;
+        if (file.name.endsWith('.html')) {
+            fileContent = addSpaceBetweenScriptTags(file.content);
+        }
+
+        const newFile = createFile(file.name, fileContent);
+        if (!firstFileId) {
+            firstFileId = newFile.id;
+        }
+    }
+    
+    // Try to set index.html as active first
+    let activeFile = appState.files.find(f => f.name.toLowerCase() === 'index.html');
+    if (activeFile) {
+        appState.activeFileId = activeFile.id;
+    } else if (firstFileId) {
+        // Otherwise, set the first file as active
+        appState.activeFileId = firstFileId;
+    } else {
+        // Failsafe
+        setupDefaultFiles();
+    }
+    return true; // Indicate success
+}
+
+
+/**
+ * Generates a random 6-digit string.
+ * @returns {string}
+ */
+function generateRandom6DigitID() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/**
+ * *** UPDATED: Re-uses fetchProjectData to find an available ID ***
+ * Loops until it finds a 6-digit ID that is not in the database.
+ * @returns {Promise<string>} A unique 6-digit ID.
+ */
+async function findValid6DigitID() {
+    let attempts = 0;
+    while (attempts < 10) { // Safety break to prevent infinite loops
+        const id = generateRandom6DigitID();
+        try {
+            await fetchProjectData(id);
+            // If this succeeds, the ID *exists*, so try again.
+            // console.log(`ID ${id} already exists. Trying another.`);
+        } catch (e) {
+            // If this fails (e.g., "Project ID not found"),
+            // then the ID is *available*!
+            // console.log(`Found available ID: ${id}`);
+            return id;
+        }
+        attempts++;
+    }
+    throw new Error("Could not find a valid unique ID after 10 attempts.");
+}
+
+// --- REPLACE your old handleShareProject function with this one ---
+async function submitProject(PID1, PN1) {
+    try {
+        // Validate PID: starts with optional letter + 6 digits
+        if (!/^[A-Z]?\d{6}$/.test(PID1)) {
+            throw new Error("PID must start with a letter followed by 6 digits");
+        }
+
+        // Combine all files into one string
+        let projectString = '';
+        appState.files.forEach(file => {
+            projectString += `✴️start:${file.name}:${file.content}✴️end\n`;
+        });
+        const trimmedProjectString = projectString.trim();
+
+        // 50,000 character limit validation
+        if (trimmedProjectString.length > 50000) {
+            alert("The project is huge and cannot be stored. Please download it instead.");
+            hideActiveModal();
+            return false; // Return false because validation failed
+        }
+
+        // Google Form endpoint for POST
+        const Database = 'https://docs.google.com/forms/d/e/1FAIpQLSdFWM_CrpiQmgXtJsAB0Iod4wq5QYnnA5ONJ9G1VRwmpYAHhA/formResponse';
+
+        // Prepare form data for POST
+        const formData = new URLSearchParams();
+        formData.append('entry.1512763632', PID1);  // 6-digit ID
+        formData.append('entry.1652914672', PN1);   // Name
+        formData.append('entry.1278179445', trimmedProjectString); // Project data
+
+        // Submit the form (cross-origin, no response due to no-cors)
+        await fetch(Database, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: formData,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        PID = "c" + PID1; // Update global PID
+        PN = PN1;   // Update global PN
+        PC = PID1; // Update global PC (strip leading letter if present)
+
+        // Optionally hide modal after submission
+        hideActiveModal();
+        return true; // Return true on successful network dispatch
+
+    } catch (error) {
+        console.error("Submission failed:", error);
+        hideActiveModal();
+        return false; // Return false if an error occurred during fetch or validation
+    }
+}
+
+/**
+ * *** UPDATED: Submits project to Google Form in the background ***
+ * Handles the "Share Project" button click
+ */
+async function handleShareProject() {
+    saveCurrentFile(); // Save latest changes
+    // console.log("Share button clicked. Current PID:", PID);
+
+    let projectString = '';
+    appState.files.forEach(file => {
+        projectString += `✴️start:${file.name}:${file.content}✴️end\n`;
+    });
+    const trimmedProjectString = projectString.trim();
+
+    // 50,000 character limit validation
+    if (trimmedProjectString.length > 50000) {
+        alert("The project is huge and cannot be stored. Please download it instead.");
+        return;
+    }
+
+    if (PID.startsWith("c")) {
+        updateProject(PID, PN);
+    } else {
+
+        while (true) {
+            PN = prompt(
+                "Enter a project name (max 25 characters):",
+                ""
+            );
+
+            // user cancelled
+            if (PN === null) return;
+
+            PN = PN.trim();
+
+            // empty check
+            if (!PN) {
+                alert("Please enter a project name.");
+                continue;
+            }
+
+            // length check
+            if (PN.length > 25) {
+                alert("Project name must be 25 characters or less.");
+                continue;
+            }
+
+            break;
+        }
+
+        const finalName = PN;
+    
+        // showConfirmModal('Sharing...', 'Generating unique project ID... Please wait.', null, true);
+        showConfirmModal(
+            'Share Code Files',
+            'Your code files are currently being shared publicly and temporarily. Anyone with the link will have access. Please hold on while we generate your project link...',
+            null, true);
+
+
+        try {
+            // 1. Get a unique 6-digit ID (This part is unchanged)
+            const validID = await findValid6DigitID();
+        
+            await submitProject(validID, finalName);
+        
+            // 7. Show the generated code and the URL.
+            // We are *assuming* the submission worked.
+            const projectUrl = `${window.location.origin}${window.location.pathname}?id=${validID}`;
+            navigator.clipboard.writeText(projectUrl); // Copy the link
+        
+            showConfirmModal(
+                'Project was Live!', // Changed message
+                `Your project link has been copied:\n${projectUrl}`, // Updated message
+                null,
+                true
+            );
+
+            updateCodeDisplay("c" + validID);
+
+            // Change share button to update icon
+            const shareBtn = document.getElementById('share-btn');
+            if (shareBtn) {
+                shareBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i>`; // Update icon
+                shareBtn.title = "Update Project";
+            }
+
+        } catch (e) {
+            // This catch will only trigger if findValid6DigitID() fails
+            // or if the network request itself fails (e.g., no internet).
+            // It will NOT catch a "404 Not Found" from the Google Form.
+            console.error('Failed to create or send share link:', e);
+            hideActiveModal();
+            showConfirmModal('Error', `Could not share project: ${e.message}`, null, true);
+        }
+    }
+}
+
+async function updateProject(PID, PN) {
+    saveCurrentFile(); // Save latest changes
+
+    // Change share button to update icon
+    const shareBtn = document.getElementById('share-btn');
+    if (shareBtn) {
+        shareBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i>`; // Update icon
+        shareBtn.title = "Update Project";
+    }
+
+    showConfirmModal('Updating Project...', `Updating your project ID: ${PID}. Please wait.`, null, true, true);
+
+    try {
+        // Capture the boolean status from submitProject
+        const success = await submitProject(PID.substring(1), PN);
+
+        // If submission failed, do nothing except ensuring the active loading modal closes
+        if (!success) {
+            hideActiveModal();
+            return;
+        }
+
+        // --- SUCCESS WORKFLOW ---
+        // Copy link to clipboard
+        const projectUrl = `${window.location.origin}${window.location.pathname}?id=${PID.substring(1)}`;
+        navigator.clipboard.writeText(projectUrl);
+
+        showConfirmModal(
+            'Project Updated!',
+            `Your project link has been updated and copied:\n${projectUrl}`,
+            null, true
+        );
+
+    } catch (e) {
+        // This catches catastrophic structural runtime errors rather than standard submission failures
+        console.error("Failed to update project:", e);
+        hideActiveModal();
+        showConfirmModal('Error', `Could not update project: ${e.message}`, null, true);
+    }
+}
+
+/**
+ * Handles bulk file creation from the developer modal.
+ */
+function handleBulkCreate() {
+    const namesString = dom.bulkFileNamesInput.value;
+    if (!namesString.trim()) {
+        showConfirmModal('No Input', 'Please enter one or more file names.', null, true);
+        return;
+    }
+    
+    const names = namesString.split(',').map(name => name.trim()).filter(name => name);
+    const validExtensions = ['.html', '.css', '.js', '.json'];
+    let createdCount = 0;
+    
+    for (const name of names) {
+        const hasValidExtension = validExtensions.some(ext => name.endsWith(ext));
+        
+        if (!hasValidExtension) {
+            console.warn(`Skipping "${name}": Invalid or missing extension.`);
+            continue;
+        }
+
+        const alreadyExists = appState.files.find(f => f.name.toLowerCase() === name.toLowerCase());
+        
+        if (!alreadyExists) {
+            createFile(name);
+            createdCount++;
+        }
+    }
+    
+    dom.bulkFileNamesInput.value = ''; 
+    hideActiveModal();
+    renderFileTabs();
+    showConfirmModal(
+        'Bulk Create Complete',
+        `${createdCount} new file(s) created. Files that already existed were skipped.`,
+        null,
+        true
+    );
+}
+
+/**
+ * Handles the file input change event for importing.
+ */
+function handleFileImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const fileName = file.name;
+    dom.importFileInput.value = null;
+    const alreadyExists = appState.files.find(f => f.name.toLowerCase() === fileName.toLowerCase());
+
+    if (alreadyExists) {
+        appState.pendingImportFile = file;
+        dom.importConflictMessage.textContent = `A file named "${fileName}" already exists. Please provide a new name to import.`;
+        
+        const [baseName, extension] = splitFileName(fileName);
+        dom.importRenameName.value = baseName;
+        dom.importRenameExtension.value = extension;
+        
+        hideActiveModal(); 
+        showModal(dom.importRenameModal);
+    } else {
+        readFileAndAdd(file);
+    }
+}
+
+/**
+ * Reads a file and adds it to the app state.
+ */
+function readFileAndAdd(file, newName = null) {
+    const fileName = newName || file.name;
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+        const content = e.target.result;
+        const newFile = createFile(fileName, content);
+        
+        hideActiveModal(); 
+        renderFileTabs();
+        switchFile(newFile.id); 
+    };
+    
+    reader.onerror = () => {
+        showConfirmModal('Import Error', `Failed to read the file: ${file.name}`, null, true);
+    };
+    
+    reader.readAsText(file);
+}
+
+/**
+ * Handles the confirmation from the import-rename modal.
+ */
+function handleImportRenameConfirm() {
+    const file = appState.pendingImportFile;
+    if (!file) return;
+
+    const validation = validateFileName(dom.importRenameName.value, dom.importRenameExtension.value);
+
+    if (!validation.isValid) {
+        showConfirmModal('Invalid Name', validation.error, null, true);
+        return; 
+    }
+    
+    readFileAndAdd(file, validation.fullName);
+}
+
+
+// --- Resizing Logic ---
+let isResizing = false;
+const minWidth = 350; 
+const touchMinWidth = 100; 
+
+function onResizeStart(e) {
+    if (e.type === 'mousedown' && e.button !== 0) return; 
+    e.preventDefault();
+    isResizing = true;
+
+    document.addEventListener('mousemove', onResizeMove);
+    document.addEventListener('touchmove', onResizeMove, { passive: false });
+    document.addEventListener('mouseup', onResizeEnd);
+    document.addEventListener('touchend', onResizeEnd);
+
+    document.body.style.cursor = 'col-resize';
+    dom.leftPanel.style.pointerEvents = 'none';
+    dom.rightPanel.style.pointerEvents = 'none';
+    if (dom.previewFrame) dom.previewFrame.style.pointerEvents = 'none';
+}
+
+function onResizeMove(e) {
+    if (!isResizing) return;
+    if (appState.runMode === 'newTab') return; 
+
+    if (e.type === 'touchmove') {
+        e.preventDefault();
+    }
+    
+    let clientX = 0;
+    if (e.type === 'touchmove') {
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+        } else {
+            return; 
+        }
+    } else {
+        clientX = e.clientX;
+    }
+
+    const mainRect = dom.mainContainer.getBoundingClientRect();
+    const gutterWidth = dom.resizeGutter.offsetWidth;
+    let newLeftWidth = clientX - mainRect.left - (gutterWidth / 2);
+    
+    const currentMinWidth = (e.type === 'touchmove') ? touchMinWidth : minWidth;
+    const maxWidth = mainRect.width - currentMinWidth - gutterWidth;
+
+    newLeftWidth = Math.max(currentMinWidth, Math.min(newLeftWidth, maxWidth));
+    dom.mainContainer.style.gridTemplateColumns = `${newLeftWidth}px ${gutterWidth}px 1fr`;
+}
+
+function onResizeEnd() {
+    isResizing = false;
+
+    document.removeEventListener('mousemove', onResizeMove);
+    document.removeEventListener('touchmove', onResizeMove);
+    document.removeEventListener('mouseup', onResizeEnd);
+    document.removeEventListener('touchend', onResizeEnd);
+
+    document.body.style.cursor = '';
+    dom.leftPanel.style.pointerEvents = '';
+    dom.rightPanel.style.pointerEvents = '';
+    if (dom.previewFrame) dom.previewFrame.style.pointerEvents = '';
+
+    if (appState.runMode === 'local') {
+        const currentGrid = dom.mainContainer.style.gridTemplateColumns;
+        if (currentGrid && currentGrid.includes('px')) {
+            const newWidth = currentGrid.split(' ')[0];
+            appState.leftPanelWidth = newWidth;
+            localStorage.setItem('codelab-panel-width', newWidth);
+        }
+    }
+}
+
+function setupResizing() {
+    const gutter = dom.resizeGutter;
+    if (!gutter || !dom.mainContainer || !dom.leftPanel || !dom.rightPanel) {
+        console.warn("Resize elements not found, skipping.");
+        return;
+    }
+
+    gutter.addEventListener('mousedown', onResizeStart);
+    gutter.addEventListener('touchstart', onResizeStart, { passive: false });
+}
+
+/**
+ * Sets up all global event listeners for the application.
+ */
+function setupEventListeners() {
+    // Top Bar
+    dom.downloadProjectBtn.addEventListener('click', handleDownloadProject);
+    dom.settingsBtn.addEventListener('click', () => showModal(dom.settingsModal)); 
+    dom.developerBtn.addEventListener('click', () => showModal(dom.developerModal)); 
+
+    // Settings Modal Listeners
+    dom.themeToggleBtn.addEventListener('click', toggleTheme); 
+    dom.fontSelect.addEventListener('change', (e) => setEditorFont(e.target.value)); 
+
+    // File Actions
+    dom.addFileBtn.addEventListener('click', handleAddNewFile);
+    dom.copyFileBtn.addEventListener('click', handleCopyFile); 
+    dom.renameFileBtn.addEventListener('click', handleRenameFile);
+    dom.deleteFileBtn.addEventListener('click', handleDeleteFile);
+
+    // Preview Actions
+    dom.runCodeBtn.addEventListener('click', handleRunClick);
+    dom.runNewTabBtn.addEventListener('click', handleRunInNewTab);
+    dom.shareBtn.addEventListener('click', handleShareProject); 
+    
+    let rotationDegree = 0;
+    dom.updateNewTabBtn.addEventListener('click', () => {
+        const icon = document.getElementById('update-icon');
+        rotationDegree += 180;
+        icon.style.transform = `rotate(${rotationDegree}deg)`;
+        runCode('index.html');
+    });
+
+    // Modal Actions
+    dom.modalBackdrop.addEventListener('click', (e) => {
+        if (e.target.closest('.modal-cancel-btn')) {
+            hideActiveModal();
+        }
+    });
+    dom.createFileConfirmBtn.addEventListener('click', handleCreateFileConfirm);
+    dom.renameFileConfirmBtn.addEventListener('click', handleRenameFileConfirm);
+    dom.downloadProjectConfirmBtn.addEventListener('click', handleDownloadProjectConfirm);
+    
+    // Developer/Import Modal Listeners
+    dom.bulkCreateBtn.addEventListener('click', handleBulkCreate);
+    dom.importFileBtn.addEventListener('click', () => dom.importFileInput.click());
+    dom.importFileInput.addEventListener('change', handleFileImport);
+    dom.importRenameConfirmBtn.addEventListener('click', handleImportRenameConfirm);
+
+    // Handle the custom confirm modal
+    dom.confirmConfirmBtn.addEventListener('click', () => {
+        if (typeof appState.onConfirm === 'function') {
+            appState.onConfirm();
+        }
+        hideActiveModal();
+    });
+
+    // Add real-time dot stripping from file name inputs
+    const stripDots = (e) => { e.target.value = e.target.value.replace(/\./g, ''); };
+    dom.newFileNameInput.addEventListener('input', stripDots);
+    dom.renameFileNameInput.addEventListener('input', stripDots);
+    dom.importRenameName.addEventListener('input', stripDots); 
+
+    // Trap focus in modal
+    dom.modalBackdrop.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab' && appState.modalStack.length > 0) {
+            const currentModal = appState.modalStack[appState.modalStack.length - 1];
+            const focusable = currentModal.querySelectorAll('button, input, select');
+            if (focusable.length === 0) return;
+            
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            
+            if (e.shiftKey && document.activeElement === first) {
+                last.focus();
+                e.preventDefault();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                first.focus();
+                e.preventDefault();
+            }
+        }
+        if (e.key === 'Escape') {
+            hideActiveModal();
+        }
+    });
+
+// Inside setupEventListeners() in script.js:
+if (dom.aiAgentBtn) {
+    dom.aiAgentBtn.addEventListener('click', () => {
+        showModal(dom.aiAgentModal);
+        setTimeout(() => dom.aiPromptInput.focus(), 50);
+    });
+}
+
+if (dom.aiAgentSubmitBtn) {
+    dom.aiAgentSubmitBtn.addEventListener('click', () => {
+        const prompt = dom.aiPromptInput.value.trim();
+        if (!prompt) return;
+        handleAIAgentRequest(prompt);
+    });
+
+    // Allow Shift+Enter for new line, Enter to submit
+    dom.aiPromptInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            dom.aiAgentSubmitBtn.click();
+        }
+    });
+}
+
+    setupResizing();
+}
+
+// --- Utility Functions ---
+
+/**
+ * Escapes a string for use in a regular expression.
+ */
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Creates a debounced function that delays invoking func until after wait milliseconds.
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+}
+
+/**
+ * Splits a file name into its base and extension.
+ */
+function splitFileName(fileName) {
+    const lastDotIndex = fileName.lastIndexOf('.');
+
+    if (lastDotIndex <= 0) {
+        return [fileName, '.html']; 
+    }
+
+    const baseName = fileName.substring(0, lastDotIndex);
+    const extension = fileName.substring(lastDotIndex); 
+
+    if (['.html', '.css', '.js', '.json'].includes(extension)) { 
+        return [baseName, extension];
+    }
+    
+    return [fileName, '.html'];
+}
+
+
+/**
+ * UPDATED: Robust app starter, now async
+ */
+async function startApp() {
+    if (typeof CodeMirror !== 'undefined') {
+        console.log("CodeLab - HTML loaded, initializing app.");
+        
+        // 1. Populate DOM refs FIRST. This is the critical fix.
+        //    Now, dom.confirmTitle will exist.
+        populateDomRefs();
+        
+        // 2. Setup CodeMirror (depends on populateDomRefs)
+        setupCodeMirror();
+
+        // 3. Now we can safely await the URL handler,
+        //    which is allowed to show modals.
+        await handleUrlParameters(); 
+        
+        // 4. Setup the rest of the UI
+        const savedTheme = localStorage.getItem('codelab-theme') || 'light';
+        setTheme(savedTheme);
+
+        const savedFont = localStorage.getItem('codelab-font') || appState.editorFont;
+        setEditorFont(savedFont);
+
+        const savedWidth = localStorage.getItem('codelab-panel-width');
+        if (savedWidth) {
+            appState.leftPanelWidth = savedWidth;
+            dom.mainContainer.style.gridTemplateColumns = `${savedWidth} auto 1fr`;
+        }
+
+        // 5. Setup event listeners
+        setupEventListeners();
+
+        // 6. Render the final state based on files loaded from URL
+        renderFileTabs();
+        if (appState.activeFileId) {
+            loadFileIntoEditor(appState.activeFileId); 
+        } else if (appState.files.length > 0) {
+            // Failsafe if activeFileId wasn't set
+            loadFileIntoEditor(appState.files[0].id);
+        }
+        
+        runCode();
+        updateRunModeUI(); 
+
+    } else {
+        console.error("startApp was called but CodeLab - HTML Editor is still not defined. This indicates a script loading error in codelab.html.");
+    }
+}
+
+function updateCodeDisplay(newPID) {
+    PID = newPID;
+
+    const el = document.getElementById("code-display");
+    const slash = document.getElementById("slash");
+
+    if (!PID) {
+        el.textContent = "";
+        if (slash) slash.classList.add("hidden");
+        return;
+    }
+
+    const value = PID.toString();
+    let displayCode = value;
+
+    // Remove any existing refresh icon
+    const existingRefresh = document.getElementById("refresh-icon");
+    if (existingRefresh) existingRefresh.remove();
+
+    if (value.startsWith("c")) {
+        displayCode = value.slice(1);
+        el.textContent = /^\d{6}$/.test(displayCode)
+            ? displayCode.split('').join(' ')
+            : displayCode;
+
+        // Click to copy (same as before)
+        el.style.cursor = "pointer";
+        el.title = "Click to copy ID";
+        el.onclick = () => {
+            const codeToCopy = value.slice(1);
+            navigator.clipboard.writeText(codeToCopy);
+            alert(`Copied ID: ${codeToCopy}`);
+        };
+
+    } else if (value.startsWith("n")) {
+        displayCode = value.slice(1);
+        el.textContent = displayCode;
+
+        // Show refresh icon
+        const refresh = document.createElement("span");
+        refresh.id = "refresh-icon";
+        refresh.innerHTML = '    <i class="fa-solid fa-cloud-arrow-down"></i>'; // refresh icon
+        refresh.style.cursor = "pointer";
+        refresh.title = "Click to sync Project";
+
+        refresh.onclick = () => {
+            const baseUrl = window.location.origin + window.location.pathname;
+            window.location.href = `${baseUrl}?id=${encodeURIComponent(PC)}`;
+        };
+
+        el.appendChild(refresh);
+
+        // Disable copy for this type
+        el.style.cursor = "default";
+        el.onclick = null;
+
+    } else {
+        el.textContent = value;
+
+        // Default copy behavior
+        el.style.cursor = "pointer";
+        el.title = "Click to copy ID";
+        el.onclick = () => {
+            const codeToCopy = value.slice(1);
+            navigator.clipboard.writeText(codeToCopy);
+            alert(`Copied ID: ${codeToCopy}`);
+        };
+    }
+
+    // ✅ show slash only when PID exists
+    if (slash) slash.classList.remove("hidden");
+}
+
+/**
+ * Appends a message bubble to the AI Chat UI.
+ */
+function addChatBubble(role, text) {
+    const wrapper = document.createElement('div');
+    wrapper.className = role === 'user' ? 'flex justify-end' : 'flex justify-start';
+
+    const bubble = document.createElement('div');
+    bubble.className = role === 'user' 
+        ? 'bg-blue-600 text-white p-3 rounded-lg rounded-tr-none max-w-[85%] text-sm shadow-sm'
+        : 'bg-purple-100 dark:bg-purple-900/40 text-purple-900 dark:text-purple-100 p-3 rounded-lg rounded-tl-none max-w-[95%] text-sm shadow-sm border border-purple-200 dark:border-purple-800 overflow-x-auto';
+
+    // Basic formatting for AI responses (newlines to <br>, handle code blocks visually)
+    if (role === 'ai') {
+        let formattedText = text.replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-800 text-gray-100 p-2 rounded mt-2 text-xs overflow-x-auto"><code>$1</code></pre>');
+        bubble.innerHTML = formattedText.replace(/\n/g, '<br>');
+    } else {
+        bubble.textContent = text;
+    }
+
+    wrapper.appendChild(bubble);
+    dom.aiChatHistory.appendChild(wrapper);
+    
+    // Auto-scroll to bottom
+    dom.aiChatHistory.scrollTop = dom.aiChatHistory.scrollHeight;
+}
+
+/**
+ * The core AI logic: Handles chat context, querying, and file extraction.
+ */
+async function handleAIAgentRequest(userPrompt) {
+    saveCurrentFile(); // Auto-save current work before AI modifies things
+
+    const aiAPI = window.ai?.languageModel || window.LanguageModel;
+    if (!aiAPI) {
+        alert('Chrome Built-in AI is not supported in your browser. Please ensure you are using Chrome Desktop version 148+.');
+        return;
+    }
+
+    // 1. Update UI: Show User Message & Loading State
+    dom.aiPromptInput.value = '';
+    addChatBubble('user', userPrompt);
+    
+    dom.aiAgentSubmitBtn.disabled = true;
+    dom.aiAgentSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mb-1"></i><span class="text-xs">Thinking</span>';
+    dom.aiTimer.textContent = 'Initializing AI...';
+
+    const startTime = performance.now();
+
+    try {
+        const status = await aiAPI.availability();
+        if (status === 'unavailable') throw new Error('Local AI model is unavailable.');
+
+        // 2. Prepare Context (Current state of all files)
+        let projectString = '';
+        appState.files.forEach(file => {
+            projectString += `--- FILE: ${file.name} ---\n${file.content}\n\n`;
+        });
+
+        const systemPrompt = `You are an expert web development AI inside CodeLab.
+CURRENT PROJECT FILES:
+${projectString}
+
+CRITICAL RULES:
+1. You MUST wrap code blocks in Markdown (e.g., \`\`\`html ... \`\`\` or \`\`\`css ... \`\`\`).
+2. Precede every code block with its filename in bold (e.g., **index.html** or **style.css**).
+3. NEVER use local relative file paths for images or icons (like 'images/project1.jpg' or 'icons/css.svg') because they will throw 404 errors. Always use valid public URLs from Unsplash (e.g., '[https://images.unsplash.com/photo-](https://images.unsplash.com/photo-)...') or reliable CDN image links for all portfolio items and graphics.`;
+
+        dom.aiTimer.textContent = 'Generating code (this may take a few seconds)...';
+
+        // 3. Query the Model
+        const session = await aiAPI.create({ systemPrompt: systemPrompt, expectedLanguage: 'en' });
+        const response = await session.prompt(userPrompt);
+        session.destroy();
+
+        // Timer calculation
+        const timeTaken = ((performance.now() - startTime) / 1000).toFixed(1);
+        dom.aiTimer.textContent = `⚡ AI responded in ${timeTaken}s`;
+
+        // 4. Update UI: Show AI Message
+        addChatBubble('ai', response);
+
+        // 5. Smart Dual-Parser: Extract files and update the workspace
+        const changedFiles = extractFilesFromResponse(response);
+
+        // 6. Apply updates directly to the UI and Preview
+        if (changedFiles.length > 0) {
+            renderFileTabs();
+            
+            // Switch to the first modified file
+            const targetFile = appState.files.find(f => f.name === changedFiles[0]);
+            if (targetFile) switchFile(targetFile.id);
+
+            // Auto-run the code
+            runCode('index.html');
+            
+            dom.aiTimer.textContent += ` | ✅ Updated: ${changedFiles.join(', ')}`;
+        } else {
+            dom.aiTimer.textContent += ` | ⚠️ No file changes detected.`;
+        }
+
+    } catch (e) {
+        console.error(e);
+        dom.aiTimer.textContent = '❌ Request Failed';
+        addChatBubble('ai', `**Error:** ${e.message}`);
+    } finally {
+        dom.aiAgentSubmitBtn.disabled = false;
+        dom.aiAgentSubmitBtn.innerHTML = '<i class="fas fa-paper-plane mb-1"></i><span class="text-xs">Send</span>';
+        setTimeout(() => dom.aiPromptInput.focus(), 50);
+    }
+}
+
+updateCodeDisplay(PID);
