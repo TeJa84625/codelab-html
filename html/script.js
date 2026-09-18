@@ -24,6 +24,14 @@ const DEFAULT_JS = ``;
 
 const DEFAULT_ABOUT_HTML = ``;
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((reg) => console.log('Service Worker registered successfully!', reg.scope))
+      .catch((err) => console.error('Service Worker registration failed:', err));
+  });
+}
+
 // --- Application State ---
 let appState = {
     files: [],
