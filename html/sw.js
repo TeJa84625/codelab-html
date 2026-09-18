@@ -8,7 +8,6 @@ const CORE_ASSETS = [
   '/about.html',
   '/form.html',
   '/preview.html',
-  '/styles.css', // Assumed stylesheet if you have one
   '/script.js'
 ];
 
