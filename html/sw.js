@@ -13,8 +13,6 @@ const CORE_ASSETS = [
 ];
 
 const DYNAMIC_PAGES = [
-  '/ai.html',
-  '/ai.js',
   '/learn.html',
   '/test.html'
 ];
